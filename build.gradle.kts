@@ -36,7 +36,7 @@ subprojects {
 
     cloudstream {
         // when running through github workflow, GITHUB_REPOSITORY should contain current repository name
-        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "int3debug/alphacloud")
+        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "int3debug/arabic-repo")
     }
 
     android {

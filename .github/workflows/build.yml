@@ -18,19 +18,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
         with:
           path: "src"
 
       - name: Ensure builds branch exists
         run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
           git fetch origin
           if git ls-remote --heads origin builds | grep -sw 'builds'; then
             echo "builds branch exists"
           else
             echo "Creating builds branch"
-            git config --local user.email "actions@github.com"
-            git config --local user.name "GitHub Actions"
             git checkout --orphan builds
             git rm -rf .
             touch README.md
