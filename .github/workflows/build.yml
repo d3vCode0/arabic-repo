@@ -29,6 +29,7 @@ jobs:
             echo "builds branch exists"
           else
             echo "Creating builds branch"
+            git init
             git checkout --orphan builds
             git rm -rf .
             git config --local user.email "actions@github.com"
