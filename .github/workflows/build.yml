@@ -29,13 +29,13 @@ jobs:
             echo "builds branch exists"
           else
             echo "Creating builds branch"
-            git config --local user.email "actions@github.com"
-            git config --local user.name "GitHub Actions"
-            git checkout --orphan $branch_name || exit 0
+            git config --global user.email "actions@github.com"
+            git config --global user.name "GitHub Actions"
+            git checkout --orphan $branch_name || exit 0  # Exit successfully if branch already exists
             git rm -rf .
-            touch README.md
+            echo 'Builds repo' >> README.md
             git add README.md
-            git commit -m "Initialize builds branch"
+            git commit -m "Initial commit for new branch"
             git push origin $branch_name
           fi
 
