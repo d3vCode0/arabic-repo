@@ -24,21 +24,20 @@ jobs:
 
       - name: Ensure builds branch exists
         run: |
-          git init
-          git config --global init.defaultBranch main
-          git fetch origin
-          if git ls-remote --heads origin builds | grep -sw 'builds'; then
+          branch_name="builds"
+          if git show-ref --verify --quiet "refs/heads/$branch_name"; then
             echo "builds branch exists"
           else
             echo "Creating builds branch"
-            git checkout --orphan builds
-            git rm -rf .
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Actions"
+            git checkout --orphan $branch_name || exit 0
+            git rm -rf .
             touch README.md
             git add README.md
             git commit -m "Initialize builds branch"
-            git push origin builds
+            git push origin $branch_name
+          fi
 
       - name: Checkout builds
         uses: actions/checkout@master
