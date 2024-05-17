@@ -25,6 +25,7 @@ jobs:
       - name: Ensure builds branch exists
         run: |
           git init
+          git config --global init.defaultBranch main
           git fetch origin
           if git ls-remote --heads origin builds | grep -sw 'builds'; then
             echo "builds branch exists"
