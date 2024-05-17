@@ -24,12 +24,12 @@ jobs:
 
       - name: Ensure builds branch exists
         run: |
+          git init
           git fetch origin
           if git ls-remote --heads origin builds | grep -sw 'builds'; then
             echo "builds branch exists"
           else
             echo "Creating builds branch"
-            git init
             git checkout --orphan builds
             git rm -rf .
             git config --local user.email "actions@github.com"
