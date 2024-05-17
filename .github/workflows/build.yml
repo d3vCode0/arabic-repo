@@ -24,8 +24,6 @@ jobs:
 
       - name: Ensure builds branch exists
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
           git fetch origin
           if git ls-remote --heads origin builds | grep -sw 'builds'; then
             echo "builds branch exists"
@@ -33,6 +31,8 @@ jobs:
             echo "Creating builds branch"
             git checkout --orphan builds
             git rm -rf .
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Actions"
             touch README.md
             git add README.md
             git commit -m "Initialize builds branch"
