@@ -14,7 +14,7 @@ class CimalekProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/recent/movies/" to "Movies",
+        // "${mainUrl}/recent/movies/" to "Movies",
         "${mainUrl}/recent/series/" to "Series",
         // "${mainUrl}/category/anime-series/" to "Animes",
         // "${mainUrl}/recent/episodes/" to "Episodes",
@@ -25,7 +25,7 @@ class CimalekProvider : MainAPI() {
         val doc = if(page == 1){
             app.get(request.data).document
         } else {
-            app.get(request.data + "page/$page").document
+            app.get(request.data + "page/$page/").document
         }
         val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
 
