@@ -13,9 +13,9 @@ class CimalekProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/recent/movies/" to "Movies",
-        "${mainUrl}/recent/series/" to "Series",
-        "${mainUrl}/recent/animes/" to "Animes",
+        "${mainUrl}/recent/" to "Movies",
+        "${mainUrl}/series/" to "Series",
+        "${mainUrl}/category/anime-series/" to "Animes",
         // "${mainUrl}/recent/episodes/" to "Episodes",
         // "${mainUrl}/recent/anime-episodes/" to "Anime Episodes",
     )
