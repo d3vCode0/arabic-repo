@@ -14,7 +14,7 @@ class CimalekProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
     override val mainPage = mainPageOf(
-        // "${mainUrl}/recent/movies/" to "Movies",
+        "${mainUrl}/recent/movies/" to "Movies",
         "${mainUrl}/recent/series/" to "Series",
         // "${mainUrl}/category/anime-series/" to "Animes",
         // "${mainUrl}/recent/episodes/" to "Episodes",
@@ -23,14 +23,14 @@ class CimalekProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse  {
         val doc = if(page == 1){
-            app.get(request.data).document
+            app.get(request.data, timeout = 120).document
         } else {
-            app.get(request.data + "page/$page/").document
+            app.get(request.data + "page/$page/", timeout = 120).document
         }
         val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
 
-        return HomePageResponse(arrayListOf(HomePageList(request.name, home)), hasNext = true)
-        // return newHomePageResponse(request.name, list)
+        // return HomePageResponse(arrayListOf(HomePageList(request.name, home)), hasNext = true)
+        return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResponse(): SearchResponse? {
@@ -39,15 +39,22 @@ class CimalekProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
         val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
 
-        return if (href.contains("/movies/")) {
-            return newMovieSearchResponse(title, href, TvType.Movie) {
+        return if (href.contains("/series/")) {
+            newTvSeriesSearchResponse(title.replace("مسلسل ", ""), href, TvType.TvSeries) {
+                this.posterUrl = posterUrl
+            }
+        } else {
+            newMovieSearchResponse(title.replace("فيلم ", ""), href, TvType.Movie) {
                 this.posterUrl = posterUrl
                 this.quality = convertToQuality(quality)
             }
-        } else {
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
+        }
+    }
+
+    override suspend fun search(query: String): List<SearchResponse> {
+        val document = app.get("$mainUrl/?s=$query").document
+        return document.select("div.film_list-wrap div.item").map {
+            it.toSearchResponse()
         }
     }
 
