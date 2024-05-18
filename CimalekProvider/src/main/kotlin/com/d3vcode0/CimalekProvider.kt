@@ -114,7 +114,7 @@ class CimalekProvider : MainAPI() {
         }.apmap {(id, post, nume) ->
             val script = document.selectFirst("script:contains(dtAjax)")?.text()
             val regex = Regex("""var dtAjax = (\{.*\});""")
-            val ver = regex.find(script)
+            val ver = script?.let { regex.find(it) }
             val ran = generateRandomString(16)
             val source = app.get(
                 url = "$mainUrl/wp-json/lalaplayer/v2/?p=$post&t=type&n=$nume&ver=$ver&rand=$ran",
