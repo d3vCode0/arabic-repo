@@ -27,13 +27,13 @@ class CimalekProvider : MainAPI() {
         } else {
             app.get(request.data + "page/$page/", timeout = 120).document
         }
-        val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
+        val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResult() }
 
         // return HomePageResponse(arrayListOf(HomePageList(request.name, home)), hasNext = true)
         return newHomePageResponse(request.name, home)
     }
 
-    private fun Element.toSearchResponse(): SearchResponse? {
+    private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
@@ -53,8 +53,8 @@ class CimalekProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
-        return document.select("div.film_list-wrap div.item").map {
-            it.toSearchResponse()
+        return document.select("div.film_list-wrap div.item").mapNotNull {
+            it.toSearchResult()
         }
     }
 
