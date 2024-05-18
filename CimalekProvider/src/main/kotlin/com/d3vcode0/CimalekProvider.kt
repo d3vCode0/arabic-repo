@@ -35,26 +35,44 @@ class CimalekProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
         val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
 
-        return if (href.contains("movies")) {
+        return if (href.contains("/movies")) {
             newMovieSearchResponse(title, href, TvType.Movie) {
                 this.posterUrl = posterUrl
                 this.quality = convertToQuality(quality)
             }
-        } else if (href.contains("series")) {
+        } else if (href.contains("/series")) {
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
                 this.posterUrl = posterUrl
             }
-        } else {
+        } else if (href.contains("/animes")) {
             newAnimeSearchResponse(title, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
+        } else {
+            newMovieSearchResponse(title, href, TvType.Others) {
+                this.posterUrl = posterUrl
+            }
+        }
+    }
+
+    override suspend fun load(url: String): LoadResponse? {
+        val doc = app.get(url).document
+        val title = doc.selectFirst("div.anisc-detail h2")?.text()?.trim() ?: return null
+        val poster = doc.selectFirst("div.film-poster img")?.attr("src")
+
+        return newMovieLoadResponse(title, url + "/watch/", TvType.AnimeMovie, url + "/watch/") {
+            this.posterUrl = poster
         }
     }
 
     fun convertToQuality(input: String): SearchQuality? {
         return when (input) {
             "1080P-WEB" -> SearchQuality.WebRip
+            "1080P-WEB-DL" -> SearchQuality.WebRip
+            "1080P-BLURAY" -> SearchQuality.BlueRay
+            "720P-WEB" -> SearchQuality.WebRip
             "BLURAY" -> SearchQuality.BlueRay
+            "HD" -> SearchQuality.HD
             "HDCAM" -> SearchQuality.HdCam
             "CAM" -> SearchQuality.Cam
             else -> null
