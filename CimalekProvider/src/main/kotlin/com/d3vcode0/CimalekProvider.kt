@@ -1,6 +1,7 @@
 package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,9 +14,9 @@ class CimalekProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/recent/" to "Movies",
-        "${mainUrl}/series/" to "Series",
-        "${mainUrl}/category/anime-series/" to "Animes",
+        "${mainUrl}/recent/movies/" to "Movies",
+        "${mainUrl}/recent/series/" to "Series",
+        // "${mainUrl}/category/anime-series/" to "Animes",
         // "${mainUrl}/recent/episodes/" to "Episodes",
         // "${mainUrl}/recent/anime-episodes/" to "Anime Episodes",
     )
@@ -26,9 +27,10 @@ class CimalekProvider : MainAPI() {
         } else {
             app.get(request.data + "page/$page").document
         }
-        val list = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
+        val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
 
-        return newHomePageResponse(request.name, list)
+        return HomePageResponse(arrayListOf(HomePageList(request.name, home)), hasNext = true)
+        // return newHomePageResponse(request.name, list)
     }
 
     private fun Element.toSearchResponse(): SearchResponse? {
@@ -37,21 +39,13 @@ class CimalekProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
         val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
 
-        if (href.contains("/movies/")) {
+        return if (href.contains("/movies/")) {
             return newMovieSearchResponse(title, href, TvType.Movie) {
                 this.posterUrl = posterUrl
                 this.quality = convertToQuality(quality)
             }
-        } else if (href.contains("/series/")) {
-            return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
-        } else if (href.contains("/animes/")) {
-            return newAnimeSearchResponse(title, href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
         } else {
-            return newMovieSearchResponse(title, href, TvType.Others) {
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
                 this.posterUrl = posterUrl
             }
         }
