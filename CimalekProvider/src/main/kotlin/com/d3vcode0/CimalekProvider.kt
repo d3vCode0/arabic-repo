@@ -14,8 +14,8 @@ class CimalekProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/recent/movies/" to "Movies",
-        "${mainUrl}/recent/series/" to "Series",
+        "${mainUrl}/recent/movies/page/" to "Movies",
+        "${mainUrl}/recent/series/page/" to "Series",
         // "${mainUrl}/category/anime-series/" to "Animes",
         // "${mainUrl}/recent/episodes/" to "Episodes",
         // "${mainUrl}/recent/anime-episodes/" to "Anime Episodes",
@@ -23,13 +23,17 @@ class CimalekProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse  {
         val doc = if(page == 1){
-            app.get(request.data, timeout = 120).document
+            app.get(request.data.replace("page/", ""), timeout = 120).document
         } else {
-            app.get(request.data + "page/$page/", timeout = 120).document
+            app.get(request.data + page, timeout = 120).document
         }
-        val home = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResult() }
 
-        // return HomePageResponse(arrayListOf(HomePageList(request.name, home)), hasNext = true)
+        val home = if (request.data.contains(Regex("(series|animes)"))) {
+            doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResultTv() }
+        } else {
+            doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResult() }
+        }
+
         return newHomePageResponse(request.name, home)
     }
 
@@ -39,15 +43,29 @@ class CimalekProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
         val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
 
-        return if (href.contains("/series/")) {
-            newTvSeriesSearchResponse(title.replace("مسلسل ", ""), href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
-        } else {
-            newMovieSearchResponse(title.replace("فيلم ", ""), href, TvType.Movie) {
+        return newMovieSearchResponse(title.replace("فيلم ", ""), href, TvType.Movie) {
                 this.posterUrl = posterUrl
                 this.quality = convertToQuality(quality)
             }
+    }
+    private fun Element.toSearchResultTv(): SearchResponse? {
+        val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
+
+        return newTvSeriesSearchResponse(title.replace("مسلسل ", ""), href, TvType.TvSeries) {
+                this.posterUrl = posterUrl
+            }
+    }
+
+    private fun Element.toEpisode(): Episode {
+        val url = select("a").attr("href")
+        val title = select("a.title span").text().trim()
+        // val thumbUrl = select("a").attr("data-src")
+        return newEpisode(url) {
+            name = title
+            episode = title.getIntFromText()
+            // posterUrl = thumbUrl
         }
     }
 
@@ -68,15 +86,27 @@ class CimalekProvider : MainAPI() {
         val tags = doc.select("div.item-list a").map { it.text() }
         // val duration = doc.selectFirst("div.anisc-more-info div:contains(المدة:) span:nth-child(3)")?.text()?.trim()
         
-
-        return newMovieLoadResponse(title, url + "watch/", TvType.AnimeMovie, url + "watch/") {
-            this.posterUrl = poster
-            // this.year = year.toIntOrNull()
-            this.plot = desc
-            this.rating = rating
-            this.tags = tags
-            // this.duration = duration
+        if (url.contains("movies")) {
+            return newMovieLoadResponse(title, url + "watch/", TvType.AnimeMovie, url + "watch/") {
+                this.posterUrl = poster
+                // this.year = year.toIntOrNull()
+                this.plot = desc
+                this.rating = rating
+                this.tags = tags
+                // this.duration = duration
+            }
+        } else {
+            val episodes = doc.select("ul.episodios li").map {
+                it.toEpisode()
+            }
+            return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+                this.posterUrl = poster
+                this.plot = desc
+                this.rating = rating
+                this.tags = tags
+            }
         }
+        
     }
 
     fun convertToQuality(input: String): SearchQuality? {
@@ -88,6 +118,7 @@ class CimalekProvider : MainAPI() {
             "720P-BLURAY" -> SearchQuality.BlueRay
             "BLURAY" -> SearchQuality.BlueRay
             "HD" -> SearchQuality.HD
+            "HDRIP" -> SearchQuality.HD
             "HDCAM" -> SearchQuality.HdCam
             "CAM" -> SearchQuality.Cam
             else -> null
