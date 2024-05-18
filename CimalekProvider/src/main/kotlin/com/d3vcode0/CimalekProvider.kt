@@ -54,7 +54,7 @@ class CimalekProvider : MainAPI() {
                     val quality = qualityElement?.text()?.trim()
                     newMovieSearchResponse(title, href, TvType.Movie) {
                         this.posterUrl = posterUrl
-                        this.quality = convertToQuality(quality)
+                        this.quality = convertToQuality(quality ?: "")
                     }
                 } else {
                     newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
