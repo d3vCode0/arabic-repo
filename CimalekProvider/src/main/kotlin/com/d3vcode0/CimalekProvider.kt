@@ -37,38 +37,6 @@ class CimalekProvider : MainAPI() {
         return newHomePageResponse(request.name, home)
     }
 
-    private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
-        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
-        val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
-
-        return newMovieSearchResponse(title.replace("فيلم ", ""), href, TvType.Movie) {
-                this.posterUrl = posterUrl
-                this.quality = convertToQuality(quality)
-            }
-    }
-    private fun Element.toSearchResultTv(): SearchResponse? {
-        val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
-        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
-
-        return newTvSeriesSearchResponse(title.replace("مسلسل ", ""), href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
-    }
-
-    private fun Element.toEpisode(): Episode {
-        val url = select("a").attr("href")
-        val title = select("a.title span").text().trim()
-        // val thumbUrl = select("a").attr("data-src")
-        return newEpisode(url) {
-            name = title
-            episode = title.getIntFromText()
-            // posterUrl = thumbUrl
-        }
-    }
-
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
         return document.select("div.film_list-wrap div.item").mapNotNull {
@@ -105,8 +73,40 @@ class CimalekProvider : MainAPI() {
                 this.rating = rating
                 this.tags = tags
             }
+        }       
+    }
+
+    private fun Element.toSearchResult(): SearchResponse? {
+        val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
+        val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
+
+        return newMovieSearchResponse(title.replace("فيلم ", ""), href, TvType.Movie) {
+                this.posterUrl = posterUrl
+                this.quality = convertToQuality(quality)
+            }
+    }
+
+    private fun Element.toSearchResultTv(): SearchResponse? {
+        val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
+
+        return newTvSeriesSearchResponse(title.replace("مسلسل ", ""), href, TvType.TvSeries) {
+                this.posterUrl = posterUrl
+            }
+    }
+
+    private fun Element.toEpisode(): Episode {
+        val url = select("a").attr("href")
+        val title = select("a.title span").text().trim()
+        // val thumbUrl = select("a").attr("data-src")
+        return newEpisode(url) {
+            name = title
+            episode = title
+            // posterUrl = thumbUrl
         }
-        
     }
 
     fun convertToQuality(input: String): SearchQuality? {
