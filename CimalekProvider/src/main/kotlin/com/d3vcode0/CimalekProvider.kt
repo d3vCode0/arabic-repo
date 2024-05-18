@@ -112,7 +112,7 @@ class CimalekProvider : MainAPI() {
                 it.attr("data-nume"),
             )
         }.apmap {(id, post, nume) ->
-            val script = document.selectFirst("script:contains(dtAjax)").text()
+            val script = document.selectFirst("script:contains(dtAjax)")?.text()
             val regex = Regex("""var dtAjax = (\{.*\});""")
             val ver = regex.find(script)
             val ran = generateRandomString(16)
@@ -233,4 +233,9 @@ class CimalekProvider : MainAPI() {
     private fun String.getIntFromText(): Int? {
         return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
     }
+
+    data class ResponseHash(
+        @JsonProperty("embed_url") val embed_url: String,
+        @JsonProperty("type") val type: String?,
+    )
 }
