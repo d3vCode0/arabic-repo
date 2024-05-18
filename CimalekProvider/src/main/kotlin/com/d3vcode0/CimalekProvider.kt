@@ -40,23 +40,33 @@ class CimalekProvider : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
         return document.select("div.film_list-wrap div.item").mapNotNull {
-            val title = it.selectFirst("div.data div.title")?.text()?.trim()
-            val href = fixUrlNull(it.selectFirst("a")?.attr("href"))
-            val posterUrl = fixUrlNull(it.selectFirst("a img.film-poster-img")?.attr("data-src"))
+            val titleElement = it.selectFirst("div.data div.title")
+            val hrefElement = it.selectFirst("a")
+            val posterElement = it.selectFirst("a img.film-poster-img")
+            
+            val title = titleElement?.text()?.trim()
+            val href = fixUrlNull(hrefElement?.attr("href"))
+            val posterUrl = fixUrlNull(posterElement?.attr("data-src"))
 
-            if (title.contains("فيلم")) {
-                val quality = it.selectFirst("div.quality")?.text()?.trim()
-                newMovieSearchResponse(title, href, TvType.Movie) {
-                    this.posterUrl = posterUrl
-                    this.quality = convertToQuality(quality)
+            if (title != null && href != null) {
+                if (title.contains("فيلم")) {
+                    val qualityElement = it.selectFirst("div.quality")
+                    val quality = qualityElement?.text()?.trim()
+                    newMovieSearchResponse(title, href, TvType.Movie) {
+                        this.posterUrl = posterUrl
+                        this.quality = convertToQuality(quality)
+                    }
+                } else {
+                    newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                        this.posterUrl = posterUrl
+                    }
                 }
             } else {
-                newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                    this.posterUrl = posterUrl
-                }
+                null
             }
         }
-    }
+}
+
 
     override suspend fun load(url: String): LoadResponse? {
         val doc = app.get(url).document
