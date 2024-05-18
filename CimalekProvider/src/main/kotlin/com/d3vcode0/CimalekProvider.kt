@@ -100,11 +100,11 @@ class CimalekProvider : MainAPI() {
 
     private fun Element.toEpisode(): Episode {
         val url = select("a").attr("href")
-        val title = select("a.title span").text().trim()
+        val title = select("a span.serie").text().trim()
         // val thumbUrl = select("a").attr("data-src")
         return newEpisode(url) {
             name = title
-            episode = title
+            episode = title.getIntFromText()
             // posterUrl = thumbUrl
         }
     }
@@ -129,5 +129,9 @@ class CimalekProvider : MainAPI() {
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val date = LocalDate.parse(dateString, formatter)
         return date.year
+    }
+
+    private fun String.getIntFromText(): Int? {
+        return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
     }
 }
