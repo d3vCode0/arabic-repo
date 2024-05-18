@@ -24,7 +24,7 @@ class CimalekProvider : MainAPI() {
         } else {
             app.get(request.data + "page/$page").document
         }
-        val list = doc.select("div.film_list div.item").mapNotNull { it.toSearchResponse() }
+        val list = doc.select("div.film_list-wrap div.item").mapNotNull { it.toSearchResponse() }
 
         return newHomePageResponse(request.name, list)
     }
@@ -35,24 +35,28 @@ class CimalekProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a img.film-poster-img")?.attr("src"))
         val quality = this.selectFirst("div.quality")?.text()?.trim() ?: return null
 
-        return if (href.contains("/movies")) {
-            newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.Movie) {
                 this.posterUrl = posterUrl
                 this.quality = convertToQuality(quality)
             }
-        } else if (href.contains("/series")) {
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
-        } else if (href.contains("/animes")) {
-            newAnimeSearchResponse(title, href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
-        } else {
-            newMovieSearchResponse(title, href, TvType.Others) {
-                this.posterUrl = posterUrl
-            }
-        }
+        // return if (href.contains("/movies/")) {
+        //     newMovieSearchResponse(title, href, TvType.Movie) {
+        //         this.posterUrl = posterUrl
+        //         this.quality = convertToQuality(quality)
+        //     }
+        // } else if (href.contains("/series/")) {
+        //     newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+        //         this.posterUrl = posterUrl
+        //     }
+        // } else if (href.contains("/animes/")) {
+        //     newAnimeSearchResponse(title, href, TvType.Anime) {
+        //         this.posterUrl = posterUrl
+        //     }
+        // } else {
+        //     newMovieSearchResponse(title, href, TvType.Others) {
+        //         this.posterUrl = posterUrl
+        //     }
+        // }
     }
 
     override suspend fun load(url: String): LoadResponse? {
@@ -67,10 +71,11 @@ class CimalekProvider : MainAPI() {
 
     fun convertToQuality(input: String): SearchQuality? {
         return when (input) {
-            "1080P-WEB" -> SearchQuality.WebRip
             "1080P-WEB-DL" -> SearchQuality.WebRip
-            "1080P-BLURAY" -> SearchQuality.BlueRay
+            "1080P-WEB" -> SearchQuality.WebRip
             "720P-WEB" -> SearchQuality.WebRip
+            "1080P-BLURAY" -> SearchQuality.BlueRay
+            "720P-BLURAY" -> SearchQuality.BlueRay
             "BLURAY" -> SearchQuality.BlueRay
             "HD" -> SearchQuality.HD
             "HDCAM" -> SearchQuality.HdCam
