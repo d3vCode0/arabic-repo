@@ -1,8 +1,11 @@
 package com.d3vcode0
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import org.jsoup.nodes.Element
+import android.util.Log
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -100,6 +103,68 @@ class CimalekProvider : MainAPI() {
         }       
     }
 
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        val document = app.get(data).document
+        document.select("div.ps_-block.ajax_mode div.item").map {
+            Triple(
+                it.attr("data-type"),
+                it.attr("data-post"),
+                it.attr("data-nume"),
+            )
+        }.apmap {(id, post, nume) ->
+            val script = document.selectFirst("script:contains(dtAjax)").text()
+            val regex = Regex("""var dtAjax = (\{.*\});""")
+            val ver = regex.find(script)
+            val ran = generateRandomString(16)
+            val source = app.get(
+                url = "$mainUrl/wp-json/lalaplayer/v2/?p=$post&t=type&n=$nume&ver=$ver&rand=$ran",
+                headers = mapOf(
+                    "Accept" to "application/json, text/javascript, */*; q=0.01",
+                    "X-Requested-With" to "XMLHttpRequest"
+                )
+            ).parsed<ResponseHash>().embed_url
+
+            when {
+                !source.contains("youtube") -> loadCustomExtractor(
+                    source,
+                    "$mainUrl/",
+                    subtitleCallback,
+                    callback
+                )
+                else -> return@apmap
+            }
+        }
+        return true
+    }
+
+    private suspend fun loadCustomExtractor(
+        url: String,
+        referer: String? = null,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit,
+        quality: Int? = null,
+    ) {
+        loadExtractor(url, referer, subtitleCallback) { link ->
+            if(link.quality == Qualities.Unknown.value) {
+                callback.invoke(
+                    ExtractorLink(
+                        link.source,
+                        link.name,
+                        link.url,
+                        link.referer,
+                        when (link.type) {
+                            ExtractorLinkType.M3U8 -> link.quality
+                            else -> quality ?: link.quality
+                        },
+                        link.type,
+                        link.headers,
+                        link.extractorData
+                    )
+                )
+            }
+        }
+    }
+
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.data div.title")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
@@ -153,6 +218,16 @@ class CimalekProvider : MainAPI() {
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val date = LocalDate.parse(dateString, formatter)
         return date.year
+    }
+
+    fun generateRandomString(length: Int): String {
+        val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        var result = StringBuilder()
+        for (i in 0 until length) {
+            val randomIndex = (chars.indices).random()
+            result.append(chars[randomIndex])
+        }
+        return result.toString()
     }
 
     private fun String.getIntFromText(): Int? {
