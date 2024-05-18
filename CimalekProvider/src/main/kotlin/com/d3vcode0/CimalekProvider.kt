@@ -107,9 +107,9 @@ class CimalekProvider : MainAPI() {
         val document = app.get(data).document
         document.select("div.ps_-block.ajax_mode div.item").map {
             Triple(
-                it.attr("data-type"),
-                it.attr("data-post"),
-                it.attr("data-nume"),
+                it.selectFirst("div").attr("data-type"),
+                it.selectFirst("div").attr("data-post"),
+                it.selectFirst("div").attr("data-nume"),
             )
         }.apmap {(id, post, nume) ->
             val script = document.selectFirst("script:contains(dtAjax)")?.text()
