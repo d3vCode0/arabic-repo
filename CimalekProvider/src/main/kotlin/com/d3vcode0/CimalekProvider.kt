@@ -61,20 +61,20 @@ class CimalekProvider : MainAPI() {
         val doc = app.get(url).document
         val title = doc.selectFirst("div.anisc-detail h2")?.text()?.trim() ?: return null
         val poster = doc.selectFirst("div.film-poster img")?.attr("src")
-        val year = convertDateStringToYearInt(doc.selectFirst("div.film-description div")?.text()?.trim())
+        // val year = convertDateStringToYearInt(doc.selectFirst("div.film-description div")?.text()?.trim())
         val desc = doc.selectFirst("div.film-description div")?.text()?.trim() ?: return null
         val rating = doc.selectFirst("div.anisc-detail .rating span.text span")?.text()?.trim()?.toRatingInt()
         val tags = doc.select("div.item-list a").map { it.text() }
-        val duration = doc.selectFirst("div.anisc-more-info div:contains(المدة:) span:nth-child(3)")?.text()?.trim()
+        // val duration = doc.selectFirst("div.anisc-more-info div:contains(المدة:) span:nth-child(3)")?.text()?.trim()
         
 
         return newMovieLoadResponse(title, url + "watch/", TvType.AnimeMovie, url + "watch/") {
             this.posterUrl = poster
-            this.year = year.toIntOrNull()
+            // this.year = year.toIntOrNull()
             this.plot = desc
             this.rating = rating
             this.tags = tags
-            this.duration = duration
+            // this.duration = duration
         }
     }
 
