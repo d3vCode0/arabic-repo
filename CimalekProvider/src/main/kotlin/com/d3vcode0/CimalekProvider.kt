@@ -64,7 +64,7 @@ class CimalekProvider : MainAPI() {
         val title = doc.selectFirst("div.anisc-detail h2")?.text()?.trim() ?: return null
         val poster = doc.selectFirst("div.film-poster img")?.attr("src")
 
-        return newMovieLoadResponse(title, url + "/watch/", TvType.AnimeMovie, url + "/watch/") {
+        return newMovieLoadResponse(title, url + "watch/", TvType.AnimeMovie, url + "watch/") {
             this.posterUrl = poster
         }
     }
