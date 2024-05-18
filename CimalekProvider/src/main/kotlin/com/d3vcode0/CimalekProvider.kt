@@ -40,12 +40,12 @@ class CimalekProvider : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
         return document.select("div.film_list-wrap div.item").mapNotNull {
-            val title = it.selectFirst("div.data div.title")?.text().trim()
+            val title = it.selectFirst("div.data div.title")?.text()?.trim()
             val href = fixUrlNull(it.selectFirst("a")?.attr("href"))
             val posterUrl = fixUrlNull(it.selectFirst("a img.film-poster-img")?.attr("data-src"))
 
             if (title.contains("فيلم")) {
-                val quality = it.selectFirst("div.quality")?.text().trim()
+                val quality = it.selectFirst("div.quality")?.text()?.trim()
                 newMovieSearchResponse(title, href, TvType.Movie) {
                     this.posterUrl = posterUrl
                     this.quality = convertToQuality(quality)
