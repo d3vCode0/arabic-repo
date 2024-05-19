@@ -40,19 +40,20 @@ class LarozaProvider : MainAPI() {
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
         val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim()
-        val tags            = document.selectFirst("dl.dl-horizontal a span")?.text()
+        // val tags            = document.selectFirst("dl.dl-horizontal a span")?.text()
 
         return if (url.contains("video")) {
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
-                this.tags = listOf(tags)
-            }} else {
+                // this.tags = listOf(tags)
+            }
+            } else {
                 val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                     val name = it.selectFirst("a")?.text()
                     val href = it.selectFirst("a")?.attr("href")
-                    val seasonNum = it?.attr("data-serie")
-                    val epNum = it?.selectFirst("a em")?.text()
+                    val seasonNum = it.attr("data-serie")
+                    val epNum = it.selectFirst("a em")?.text()
                     val season = seasonNum.toIntOrNull()
                     Episode(
                         href,
@@ -64,9 +65,9 @@ class LarozaProvider : MainAPI() {
                 newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                     this.posterUrl = poster
                     this.plot = description
-                    this.tags = listOf(tags)
+                    // this.tags = listOf(tags)
                 }
-            }
+            
         }
         
     }
