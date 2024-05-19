@@ -115,7 +115,7 @@ class CimalekProvider : MainAPI() {
             loadExtractor(iframUrl, data, subtitleCallback, callback)
         }
         return true
-        }
+        
     }
 
     private suspend fun loadCustomExtractor(
