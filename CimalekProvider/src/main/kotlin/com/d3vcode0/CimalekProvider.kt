@@ -105,52 +105,17 @@ class CimalekProvider : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val document = app.get(data).document
-        document.select("div.ss-list a").apmap {
-            val url = it.attr("href")
+        document.select("div.ss-list a").apmap { li ->
+            val url = li.attr("href")
             loadExtractor(url, data, subtitleCallback, callback)
         }
-        // document.select("div.ss-list a").apmap {
-        //     it.map {
-        //         linkElement -> callback.invoke(
-        //             ExtractorLink(
-        //                 this.name,
-        //                 this.name,
-        //                 linkElement.attr("href"),
-        //                 this.mainUrl,
-        //             )
-        //         )
-        //     }
-        }
-        // document.select("div.ps_-block.ajax_mode div.item").map {
-        //     Triple(
-        //         it.selectFirst("div")?.attr("data-type"),
-        //         it.selectFirst("div")?.attr("data-post"),
-        //         it.selectFirst("div")?.attr("data-nume"),
-        //     )
-        // }.apmap {(id, post, nume) ->
-        //     val script = document.selectFirst("script:contains(dtAjax)")?.text()
-        //     val regex = Regex("""var dtAjax = (\{.*\});""")
-        //     val ver = script?.let { regex.find(it) }
-        //     val ran = generateRandomString(16)
-        //     val source = app.get(
-        //         url = "$mainUrl/wp-json/lalaplayer/v2/?p=$post&t=type&n=$nume&ver=$ver&rand=$ran",
-        //         headers = mapOf(
-        //             "Accept" to "application/json, text/javascript, */*; q=0.01",
-        //             "X-Requested-With" to "XMLHttpRequest"
-        //         )
-        //     ).parsed<ResponseHash>().embed_url
 
-        //     when {
-        //         !source.contains("youtube") -> loadCustomExtractor(
-        //             source,
-        //             "$mainUrl/",
-        //             subtitleCallback,
-        //             callback
-        //         )
-        //         else -> return@apmap
-        //     }
-        // }
-        // return true
+        document.select("div.ss-list a").apmap {li ->
+            val iframUrl = li.attr("href")
+            loadExtractor(iframUrl, data, subtitleCallback, callback)
+        }
+        return true
+        }
     }
 
     private suspend fun loadCustomExtractor(
