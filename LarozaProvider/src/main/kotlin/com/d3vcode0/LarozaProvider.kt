@@ -36,13 +36,26 @@ class LarozaProvider : MainAPI() {
         val posterUrl = fixUrlNull(this.selectFirst("img.img-responsive")?.attr("data-echo")) ?: return null
 
         return if (href.contains("video")) {
-            newMovieSearchResponse(title, href, TvType.Movie) {
+            newMovieSearchResponse(title.getCleaned(), href, TvType.Movie) {
                 this.posterUrl = posterUrl
             }
         } else {
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+            newTvSeriesSearchResponse(title.getCleaned(), href, TvType.TvSeries) {
                 this.posterUrl = posterUrl
             }
         }
+    }
+
+    private fun String.getCleaned(): String {
+        val keywordsRegex = (
+            "\\b(الأولى|الثانية|الثالثة|الرابعة|الخامسة|السادسة|السابعة|الثامنة|التاسعة|العاشرة|عشر|الحادية|" +
+            "العشرون|والعشرون|الثلاثون|والثلاثون|الاربعون|والاربعون|الخمسون|والخمسون|الستون|والستون|السبعون|والسبعون|الثمانون|والثمانون|التسعون|والتسعون|المائة|" +
+            "وستون|" +
+            "وواحد|واثنين|وثلاثة|واربعة|وخمسة|وستة|وسبعة|وثمانية|وتسعة|وعشرة|والحادية|" +
+            "مشاهدة|فيلم|كامل اون لاين|مسلسل|HD|مترجمة|اون لاين|مترجم|مدبلج|" +
+            ")\\b"
+        ).toRegex(RegexOption.IGNORE_CASE)
+        val cleanedText = this.replace(keywordsRegex, "")
+        return cleanedText.trim().replace(Regex("\\s+"), " ")
     }
 }
