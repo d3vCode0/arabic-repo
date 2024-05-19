@@ -109,17 +109,17 @@ class CimalekProvider : MainAPI() {
             val url = it.attr("href")
             loadExtractor(url, data, subtitleCallback, callback)
         }
-        document.select("div.ss-list a").apmap {
-            it.map {
-                linkElement -> callback.invoke(
-                    ExtractorLink(
-                        this.name,
-                        this.name,
-                        linkElement.attr("href"),
-                        this.mainUrl,
-                    )
-                )
-            }
+        // document.select("div.ss-list a").apmap {
+        //     it.map {
+        //         linkElement -> callback.invoke(
+        //             ExtractorLink(
+        //                 this.name,
+        //                 this.name,
+        //                 linkElement.attr("href"),
+        //                 this.mainUrl,
+        //             )
+        //         )
+        //     }
         }
         // document.select("div.ps_-block.ajax_mode div.item").map {
         //     Triple(
