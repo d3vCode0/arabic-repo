@@ -52,9 +52,9 @@ class LarozaProvider : MainAPI() {
                 val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                     val name = it.selectFirst("a")?.text()
                     val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
-                    val seasonNum = it?.attr("data-serie")
-                    val epNum = it.selectFirst("a em")?.text().toIntOrNull()
-                    val season = seasonNum.toIntOrNull()
+                    val se = it?.attr("data-serie")
+                    val epNum = it.selectFirst("a em")?.text()?.toIntOrNull()
+                    val season = se?.toIntOrNull()
                     Episode(
                         href,
                         name,
