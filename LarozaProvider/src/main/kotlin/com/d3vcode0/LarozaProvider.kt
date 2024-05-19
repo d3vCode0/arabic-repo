@@ -32,8 +32,8 @@ class LarozaProvider : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
-        val href = this.selectFirst("a")?.attr("href")
-        val posterUrl = this.selectFirst("img.img-responsive")?.attr("data-echo")
+        val href = fixUrl(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrl(this.selectFirst("img.img-responsive")?.attr("data-echo")) ?: return null
 
         return if (href.contains("video")) {
             newMovieSearchResponse(title, href, TvType.Movie) {
