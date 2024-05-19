@@ -51,15 +51,15 @@ class LarozaProvider : MainAPI() {
             } else {
                 val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                     val name = it.selectFirst("a")?.text()
-                    val href = fixUrlNull(it.selectFirst("a")?.attr("href"))
-                    val seasonNum = it.attr("data-serie")
-                    val epNum = it.selectFirst("a em")?.text()
+                    val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
+                    val seasonNum = it?.attr("data-serie")
+                    val epNum = it.selectFirst("a em")?.text().toIntOrNull()
                     val season = seasonNum.toIntOrNull()
                     Episode(
                         href,
                         name,
                         season, 
-                        epNum.toIntOrNull() 
+                        epNum 
                     )
                 }
                 newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
