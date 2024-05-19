@@ -6,7 +6,7 @@ cloudstream {
     language = "ar"
     // All of these properties are optional, you can safely remove them
 
-    description = "سيما ليك مشاهدة الافلام و المسلسلات و الانمي"
+    description = "مشاهدة وتحميل جميع الافلام الاجنبية الجديدة والحصرية بجودة عالية"
     authors = listOf("d3vCode0")
 
     /**
