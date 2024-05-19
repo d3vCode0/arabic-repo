@@ -46,13 +46,13 @@ class LarozaProvider : MainAPI() {
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
-                this.tags = tags
-            } else {
+                this.tags = listOf(tags)
+            }} else {
                 val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                     val name = it.selectFirst("a")?.text()
                     val href = it.selectFirst("a")?.attr("href")
                     val seasonNum = it?.attr("data-serie")
-                    val epNum = it?.selectFirst("a em")
+                    val epNum = it?.selectFirst("a em")?.text()
                     val season = seasonNum.toIntOrNull()
                     Episode(
                         href,
@@ -64,7 +64,7 @@ class LarozaProvider : MainAPI() {
                 newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                     this.posterUrl = poster
                     this.plot = description
-                    this.tags = tags
+                    this.tags = listOf(tags)
                 }
             }
         }
