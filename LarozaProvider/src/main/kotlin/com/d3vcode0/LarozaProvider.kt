@@ -1,6 +1,8 @@
 package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
+import org.jsoup.nodes.Element
+
 
 class LarozaProvider : MainAPI() {
     override var mainUrl = "https://g.laroza.net"
@@ -30,8 +32,8 @@ class LarozaProvider : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
-        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img.img-responsive")?.attr("data-echo")) ?: return null
+        val href = this.selectFirst("a")?.attr("href")
+        val posterUrl = this.selectFirst("img.img-responsive")?.attr("data-echo")
 
         return if (href.contains("video")) {
             newMovieSearchResponse(title, href, TvType.Movie) {
