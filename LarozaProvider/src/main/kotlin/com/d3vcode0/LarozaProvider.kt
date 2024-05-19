@@ -2,7 +2,7 @@ package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
 
-class CimalekProvider : MainAPI() {
+class LarozaProvider : MainAPI() {
     override var mainUrl = "https://g.laroza.net"
     override var name = "Laroza"
     override val hasMainPage = true
@@ -31,7 +31,7 @@ class CimalekProvider : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img.img-responsive")?.attr("data-echo")) ?: return null
 
         return if (href.contains("video")) {
             newMovieSearchResponse(title, href, TvType.Movie) {
