@@ -30,6 +30,47 @@ class LarozaProvider : MainAPI() {
         ))
     }
 
+    override suspend fun search(query: String): List<SearchResponse> {
+        val document = app.get("$mainUrl/search.php?keywords=$query").document
+        return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
+    }
+
+    override suspend fun load(url: String): LoadResponse? {
+        val document        = app.get(url).document
+        val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
+        val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
+        val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim()
+        val tags            = document.selectFirst("dl.dl-horizontal a span")?.text()
+
+        return if (url.contains("video")) {
+            newMovieLoadResponse(title, url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.tags = tags
+            } else {
+                val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
+                    val name = it.selectFirst("a")?.text()
+                    val href = it.selectFirst("a")?.attr("href")
+                    val seasonNum = it?.attr("data-serie")
+                    val epNum = it?.selectFirst("a em")
+                    val season = seasonNum.toIntOrNull()
+                    Episode(
+                        href,
+                        name,
+                        season, 
+                        epNum.toIntOrNull() 
+                    )
+                }
+                newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+                    this.posterUrl = poster
+                    this.plot = description
+                    this.tags = tags
+                }
+            }
+        }
+        
+    }
+
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("div.caption a.ellipsis")?.attr("href")) ?: return null
