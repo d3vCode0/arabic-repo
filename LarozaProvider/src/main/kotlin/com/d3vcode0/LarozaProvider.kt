@@ -45,10 +45,9 @@ class LarozaProvider : MainAPI() {
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
             it.toSearchResult()
         }
-        Log.d("name", title)
 
-        return if (url.contains("video")) {
-            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+        if (url.contains("video")) {
+            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
@@ -58,7 +57,7 @@ class LarozaProvider : MainAPI() {
                 it.toEpisode()
             }
 
-            newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+            return newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations

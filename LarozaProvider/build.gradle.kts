@@ -23,5 +23,5 @@ cloudstream {
         "Anime",
     )
 
-    iconUrl = "https://cimalek.art/wp-content/uploads/2022/11/cropped-fav-2-192x192.png"
+    iconUrl = "https://g.laroza.net/uploads/custom-logo.png"
 }
