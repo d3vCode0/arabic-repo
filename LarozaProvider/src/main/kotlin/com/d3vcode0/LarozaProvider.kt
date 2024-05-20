@@ -42,7 +42,7 @@ class LarozaProvider : MainAPI() {
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
         val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
-        val recommendations = doc.select("div#pm-related ul li").mapNotNull {
+        val recommendations = document.select("div#pm-related ul li").mapNotNull {
             it.toSearchResult()
         }
         Log.d("name", title)
@@ -56,7 +56,7 @@ class LarozaProvider : MainAPI() {
         } else {
             val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                 val name = it.selectFirst("a")?.text()
-                Log.d("name", name)
+                // Log.d("name", name)
                 val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
                 val se = it?.attr("data-serie")
                 val epNum = it.selectFirst("a em")?.text()?.toIntOrNull()
