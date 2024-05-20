@@ -84,6 +84,8 @@ class LarozaProvider : MainAPI() {
                     this.recommendations = recommendations
                 }
             }
+        } else {
+            null
         }
 
     }
