@@ -55,25 +55,30 @@ class LarozaProvider : MainAPI() {
             it.toSearchResult()
         }
 
-        return if(title.contains("مسلسل")){
-            val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
-                val href = it?.selectFirst("a")?.attr("href") ?: return@mapNotNull null
-                val name = it.selectFirst("a")?.text()?.trim() ?: ""
-                val epnum = it.selectFirst("a em")?.text()?.toIntOrNull()
-                val senum = it?.attr("data-serie")?.toIntOrNull()
-                Episode(
-                    href,
-                    name,
-                    senum,
-                    epnum
-                )
-            }
+        if(title.contains("مسلسل")){
+            // val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
+            //     val href = it?.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+            //     val name = it.selectFirst("a")?.text()?.trim() ?: ""
+            //     val epnum = it.selectFirst("a em")?.text()?.toIntOrNull()
+            //     val senum = it?.attr("data-serie")?.toIntOrNull()
+            //     Episode(
+            //         href,
+            //         name,
+            //         senum,
+            //         epnum
+            //     )
+            // }
 
-            return newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+            // return newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+            //     this.posterUrl = poster
+            //     this.plot = description
+            //     this.recommendations = recommendations
+            // }
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
-            }  
+            }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
