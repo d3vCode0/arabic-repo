@@ -16,7 +16,16 @@ class LarozaProvider : MainAPI() {
     override val mainPage = mainPageOf(
         "$mainUrl/category.php?cat=all_movies&page=" to "افلام اجنبية",
         "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
-        "$mainUrl/moslslat.php?&page=" to "المسلسلات",
+        "$mainUrl/category.php?cat=indian-movies3&page=" to "افلام هندية",
+        "$mainUrl/category.php?cat=asian-movies&page=" to "افلام اسيوي",
+        "$mainUrl/category.php?cat=anime-movies&page=" to "افلام انمي",
+        "$mainUrl/category.php?cat=aflammdblgh&page=" to "افلام مدبلجة",
+        "$mainUrl/category.php?cat=arabic-series30&page=" to "مسلسلات عربية",
+        "$mainUrl/category.php?cat=english-series3&page=" to "مسلسلات اجنبية",
+        "$mainUrl/category.php?cat=turkish-3isk-seriess30&page=" to "مسلسلات تركية",
+        "$mainUrl/category.php?cat=4indian-series&page=" to "مسلسلات هندية",
+        "$mainUrl/category.php?cat=tv-programs5&page=" to "برامج تلفزيون",
+        "$mainUrl/category.php?cat=masrh1&page=" to "مسرحيات",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -41,12 +50,12 @@ class LarozaProvider : MainAPI() {
         val document        = app.get(url).document
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
-        val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
+        val description     = document.selectFirst("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
             it.toSearchResult()
         }
 
-        if (url.contains("video")) {
+        if (title.contains("فيلم")) {
             return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
@@ -69,10 +78,10 @@ class LarozaProvider : MainAPI() {
         val url = select("a").attr("href")
         val title = select("a").text().trim()
         val epNum = select("a em").text().toIntOrNull()
-        // val season = attr("data-serie").toIntOrNull()
+        val season = this.parent().attr("data-serie").toIntOrNull()
         return newEpisode(url) {
             name = title
-            // season = season
+            season = season
             episode = epNum
         }
     }
