@@ -70,10 +70,10 @@ class LarozaProvider : MainAPI() {
         val url = select("a").attr("href")
         val title = select("a").text().trim()
         val epNum = select("a em").text().toIntOrNull()
-        val season = attr("data-serie").toIntOrNull()
+        // val season = attr("data-serie").toIntOrNull()
         return newEpisode(url) {
             name = title
-            season = season
+            // season = season
             episode = epNum
         }
     }
