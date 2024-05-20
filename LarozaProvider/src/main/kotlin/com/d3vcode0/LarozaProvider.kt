@@ -74,10 +74,10 @@ class LarozaProvider : MainAPI() {
         }     
     }
 
-    private fun Element.toEpisode(): Episode {
-        val url = select("a").attr("href")
-        val title = select("a").text().trim()
-        val epNum = select("a em").text().toIntOrNull()
+    private fun Element.toEpisode(): Episode? {
+        val url = select("a")?.attr("href")
+        val title = select("a")?.text()?.trim()
+        val epNum = select("a em")?.text()?.toIntOrNull()
         val season = this?.parent()?.attr("data-serie")?.toIntOrNull()
         return newEpisode(url) {
             name = title
