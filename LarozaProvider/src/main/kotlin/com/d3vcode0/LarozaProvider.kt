@@ -46,7 +46,7 @@ class LarozaProvider : MainAPI() {
         return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+    override suspend fun load(url: String): LoadResponse {
         val document        = app.get(url).document
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
@@ -55,37 +55,46 @@ class LarozaProvider : MainAPI() {
             it.toSearchResult()
         }
 
-        if(title.contains("مسلسل")){
-            // val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
-            //     val href = it?.selectFirst("a")?.attr("href") ?: return@mapNotNull null
-            //     val name = it.selectFirst("a")?.text()?.trim() ?: ""
-            //     val epnum = it.selectFirst("a em")?.text()?.toIntOrNull()
-            //     val senum = it?.attr("data-serie")?.toIntOrNull()
-            //     Episode(
-            //         href,
-            //         name,
-            //         senum,
-            //         epnum
-            //     )
-            // }
+        return if (url.contains("video")) {
+            if (title.contains("فيلم")) {
+                    newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                        this.posterUrl = poster
+                        this.plot = description
+                        this.recommendations = recommendations
+                }
+            } else {
+                val episodes = document.select("div.SeasonsEpisodesMain div").map {
+                    val href = it.select("a").attr("href")
+                    val name = it.selectFirst("a").text().trim()
+                    // val image = null
+                    val ep = it.selectFirst("a em").text().toIntOrNull()
+                    val season = it.attr("data-serie").toIntOrNull()
 
-            // return newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
-            //     this.posterUrl = poster
-            //     this.plot = description
-            //     this.recommendations = recommendations
-            // }
-            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot = description
-                this.recommendations = recommendations
+                    Episode(
+                        href,
+                        name,
+                        season,
+                        ep
+                    )
+                }
+
+                newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+                    this.posterUrl = poster
+                    this.plot = description
+                    this.recommendations = recommendations
+                }
             }
         } else {
-            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+            val title = document.selectFirst("div.pm-series-meta h1")?.text()
+            val poster = fixUrlNull(document.selectFirst("div.pm-poster-img img")?.attr("src"))
+            val description = document.selectFirst("div.description p")?.text()
+
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
-                this.recommendations = recommendations
             }
         }
+
     }
 
 
