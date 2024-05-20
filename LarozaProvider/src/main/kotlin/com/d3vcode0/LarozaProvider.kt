@@ -54,19 +54,8 @@ class LarozaProvider : MainAPI() {
                 this.recommendations = recommendations
             }
         } else {
-            val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
-                val name = it.selectFirst("a")?.text()
-                // Log.d("name", name)
-                val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
-                val se = it?.attr("data-serie")
-                val epNum = it.selectFirst("a em")?.text()?.toIntOrNull()
-                val season = se?.toIntOrNull()
-                Episode(
-                    href,
-                    name,
-                    season, 
-                    epNum 
-                )
+            val episodes = document.select("div.SeasonsEpisodesMain div").map {
+                it.toEpisode()
             }
 
             newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
@@ -75,6 +64,18 @@ class LarozaProvider : MainAPI() {
                 this.recommendations = recommendations
             }  
         }     
+    }
+
+    private fun Element.toEpisode(): Episode {
+        val url = select("a").attr("href")
+        val title = select("a").text().trim()
+        val epNum = select("a em").text().toIntOrNull()
+        val season = this.attr("data-serie").toIntOrNull()
+        return newEpisode(url) {
+            name = title
+            season = season
+            episode = epNum
+        }
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
