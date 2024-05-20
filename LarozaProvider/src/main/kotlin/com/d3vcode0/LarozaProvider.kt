@@ -62,8 +62,20 @@ class LarozaProvider : MainAPI() {
                 this.recommendations = recommendations
             }
         } else {
-            val episodes = document.select("div.SeasonsEpisodesMain div").map {
-                it.toEpisode()
+            // val episodes = document.select("div.SeasonsEpisodesMain div").map {
+            //     it.toEpisode()
+            // }
+            val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
+                val href = it?.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+                val name = it.selectFirst("a")?.text()?.trim() ?: ""
+                val epnum = it.selectFirst("a em")?.text()?.toIntOrNull()
+                val senum = it?.attr("data-serie")?.toIntOrNull()
+                Episode(
+                    href,
+                    name,
+                    senum,
+                    epnum
+                )
             }
 
             return newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
@@ -74,17 +86,17 @@ class LarozaProvider : MainAPI() {
         }     
     }
 
-    private fun Element.toEpisode(): Episode? {
-        val url = select("a")?.attr("href")
-        val title = select("a")?.text()?.trim()
-        val epNum = select("a em")?.text()?.toIntOrNull()
-        val season = this?.parent()?.attr("data-serie")?.toIntOrNull()
-        return newEpisode(url) {
-            name = title
-            season = season
-            episode = epNum
-        }
-    }
+    // private fun Element.toEpisode(): Episode? {
+    //     val url = select("a")?.attr("href")
+    //     val title = select("a")?.text()?.trim()
+    //     val epNum = select("a em")?.text()?.toIntOrNull()
+    //     val season = this?.attr("data-serie")?.toIntOrNull()
+    //     return newEpisode(url) {
+    //         name = title
+    //         season = season
+    //         episode = epNum
+    //     }
+    // }
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
