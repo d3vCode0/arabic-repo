@@ -46,7 +46,7 @@ class LarozaProvider : MainAPI() {
         return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
     }
 
-    override suspend fun load(url: String): LoadResponse {
+    override suspend fun load(url: String): LoadResponse? {
         val document        = app.get(url).document
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
@@ -64,11 +64,11 @@ class LarozaProvider : MainAPI() {
                 }
             } else {
                 val episodes = document.select("div.SeasonsEpisodesMain div").map {
-                    val href = it.select("a").attr("href")
-                    val name = it.selectFirst("a").text().trim()
+                    val href = it.select("a")?.attr("href")
+                    val name = it.selectFirst("a")?.text()?.trim()
                     // val image = null
-                    val ep = it.selectFirst("a em").text().toIntOrNull()
-                    val season = it.attr("data-serie").toIntOrNull()
+                    val ep = it.selectFirst("a em")?.text()?.toIntOrNull()
+                    val season = it.attr("data-serie")?.toIntOrNull()
 
                     Episode(
                         href,
