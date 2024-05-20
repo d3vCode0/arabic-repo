@@ -74,13 +74,13 @@ class LarozaProvider : MainAPI() {
             //     this.plot = description
             //     this.recommendations = recommendations
             // }
-            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
             }
         } else {
-            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
