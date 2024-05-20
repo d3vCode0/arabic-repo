@@ -64,7 +64,7 @@ class LarozaProvider : MainAPI() {
                 }
             } else {
                 val episodes = document.select("div.SeasonsEpisodesMain div").map {
-                    val href = fixUrlNull(it.selectFirst("a")?.attr("href"))
+                    val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
                     val name = it.selectFirst("a")?.text()?.trim()
                     // val image = null
                     val ep = it.selectFirst("a em")?.text()?.toIntOrNull()
@@ -83,15 +83,6 @@ class LarozaProvider : MainAPI() {
                     this.plot = description
                     this.recommendations = recommendations
                 }
-            }
-        } else {
-            val title = document.selectFirst("div.pm-series-meta h1")?.text()
-            val poster = fixUrlNull(document.selectFirst("div.pm-poster-img img")?.attr("src"))
-            val description = document.selectFirst("div.description p")?.text()
-
-            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot = description
             }
         }
 
