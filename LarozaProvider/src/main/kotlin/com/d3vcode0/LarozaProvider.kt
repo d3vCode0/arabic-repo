@@ -1,6 +1,8 @@
 package com.d3vcode0
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 
@@ -39,37 +41,40 @@ class LarozaProvider : MainAPI() {
         val document        = app.get(url).document
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
-        val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim()
-        // val tags            = document.selectFirst("dl.dl-horizontal a span")?.text()
+        val description     = document.select("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
+        val recommendations = doc.select("div#pm-related ul li").mapNotNull {
+            it.toSearchResult()
+        }
+        Log.d("name", title)
 
         return if (url.contains("video")) {
-            newMovieLoadResponse(title, url, TvType.Movie, url) {
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
-                // this.tags = listOf(tags)
+                this.recommendations = recommendations
             }
-            } else {
-                val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
-                    val name = it.selectFirst("a")?.text()
-                    val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
-                    val se = it?.attr("data-serie")
-                    val epNum = it.selectFirst("a em")?.text()?.toIntOrNull()
-                    val season = se?.toIntOrNull()
-                    Episode(
-                        href,
-                        name,
-                        season, 
-                        epNum 
-                    )
-                }
-                newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-                    this.posterUrl = poster
-                    this.plot = description
-                    // this.tags = listOf(tags)
-                }
-            
-        }
-        
+        } else {
+            val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
+                val name = it.selectFirst("a")?.text()
+                Log.d("name", name)
+                val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
+                val se = it?.attr("data-serie")
+                val epNum = it.selectFirst("a em")?.text()?.toIntOrNull()
+                val season = se?.toIntOrNull()
+                Episode(
+                    href,
+                    name,
+                    season, 
+                    epNum 
+                )
+            }
+
+            newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+            }  
+        }     
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
