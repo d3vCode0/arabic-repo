@@ -55,16 +55,7 @@ class LarozaProvider : MainAPI() {
             it.toSearchResult()
         }
 
-        if (title.contains("فيلم")) {
-            return newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot = description
-                this.recommendations = recommendations
-            }
-        } else {
-            // val episodes = document.select("div.SeasonsEpisodesMain div").map {
-            //     it.toEpisode()
-            // }
+        return if(title.contains("مسلسل")){
             val episodes = document.select("div.SeasonsEpisodesMain div").mapNotNull {
                 val href = it?.selectFirst("a")?.attr("href") ?: return@mapNotNull null
                 val name = it.selectFirst("a")?.text()?.trim() ?: ""
@@ -83,20 +74,15 @@ class LarozaProvider : MainAPI() {
                 this.plot = description
                 this.recommendations = recommendations
             }  
-        }     
+        } else {
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+            }
+        }
     }
 
-    // private fun Element.toEpisode(): Episode? {
-    //     val url = select("a")?.attr("href")
-    //     val title = select("a")?.text()?.trim()
-    //     val epNum = select("a em")?.text()?.toIntOrNull()
-    //     val season = this?.attr("data-serie")?.toIntOrNull()
-    //     return newEpisode(url) {
-    //         name = title
-    //         season = season
-    //         episode = epNum
-    //     }
-    // }
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.caption h3")?.text()?.trim() ?: return null
@@ -116,9 +102,9 @@ class LarozaProvider : MainAPI() {
 
     private fun String.getCleaned(): String {
         val keywordsRegex = (
-            "\\b(الأولى|الثانية|الثالثة|الرابعة|الخامسة|السادسة|السابعة|الثامنة|التاسعة|العاشرة|عشر|الحادية|" +
+            "\\b(الأولى|الثانية|الثالثة|الرابعة|الخامسة|السادسة|السابعة|الثامنة|التاسعة|العاشرة|عشر|الحادية|الاولى|" +
             "العشرون|والعشرون|الثلاثون|والثلاثون|الاربعون|والاربعون|الخمسون|والخمسون|الستون|والستون|السبعون|والسبعون|الثمانون|والثمانون|التسعون|والتسعون|المائة|" +
-            "وستون|" +
+            "وستون|الحادي|الاولي|" +
             "وواحد|واثنين|وثلاثة|واربعة|وخمسة|وستة|وسبعة|وثمانية|وتسعة|وعشرة|والحادية|" +
             "مشاهدة|فيلم|كامل اون لاين|مسلسل|HD|مترجمة|اون لاين|مترجم|مدبلج|" +
             ")\\b"
