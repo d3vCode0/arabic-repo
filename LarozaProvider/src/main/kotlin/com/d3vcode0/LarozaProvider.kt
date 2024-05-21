@@ -14,6 +14,12 @@ class LarozaProvider : MainAPI() {
     override var lang = "ar"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val cfBypass by lazy { CfBypass(cloudflareKiller) }
+    override val mainPage by lazy {
+        mainPageOf(*mainPages.toList().map { (k, v) -> v to k }.toTypedArray())
+    }
+    
     override val mainPage = mainPageOf(
         "$mainUrl/category.php?cat=all_movies&page=" to "افلام اجنبية",
         "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
@@ -29,8 +35,6 @@ class LarozaProvider : MainAPI() {
         "$mainUrl/category.php?cat=masrh1&page=" to "مسرحيات",
     )
 
-    private val cloudflareKiller by lazy { CloudflareKiller() }
-    private val cfBypass by lazy { CfBypass(cloudflareKiller) }
     private var cookies: Map<String, String> = mapOf()
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
