@@ -59,7 +59,7 @@ class LarozaProvider : MainAPI() {
 
         return if(tvType == TvType.TvSeries) {
             val episodes = document.select("div.SeasonsEpisodesMain div a").map {
-                val name = it.selectFirst("em").text()
+                val name = it.selectFirst("em")?.text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
                 val episode = name.toIntOrNull()
