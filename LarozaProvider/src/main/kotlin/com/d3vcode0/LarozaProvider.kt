@@ -5,6 +5,9 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
+import okhttp3.Interceptor
+import okhttp3.Response
+import org.jsoup.Jsoup
 
 
 class LarozaProvider : MainAPI() {
@@ -14,12 +17,23 @@ class LarozaProvider : MainAPI() {
     override var lang = "ar"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
 
-    private val cloudflareKiller by lazy { CloudflareKiller() }
-    private val cfBypass by lazy { CfBypass(cloudflareKiller) }
-    override val mainPage by lazy {
-        mainPageOf(*mainPages.toList().map { (k, v) -> v to k }.toTypedArray())
-    }
+    override var sequentialMainPage = true
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.select("title").text() == "Just a moment...") {
+                return cloudflareKiller.intercept(chain)
+            }
+
+            return response
+        }
     
+
     override val mainPage = mainPageOf(
         "$mainUrl/category.php?cat=all_movies&page=" to "افلام اجنبية",
         "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
@@ -41,7 +55,7 @@ class LarozaProvider : MainAPI() {
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
         )
-        val res = app.get(request.data + "$page&order=DESC", interceptor = cfBypass)
+        val res = app.get(request.data + "$page&order=DESC", interceptor = interceptor)
         cookies = res.cookies
         val document = res.document
         val home = document.select("ul#pm-grid li").mapNotNull {
@@ -56,7 +70,7 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/search.php?keywords=$query", interceptor = cfBypass).document
+        val document = app.get("$mainUrl/search.php?keywords=$query", interceptor = interceptor).document
         return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
     }
 
@@ -68,7 +82,7 @@ class LarozaProvider : MainAPI() {
         val document = app.get(
             url,
             referer = "$mainUrl/",
-            interceptor = cfBypass,
+            interceptor = interceptor,
             cookies = cookies,
             headers = headers,
             timeout=80,
