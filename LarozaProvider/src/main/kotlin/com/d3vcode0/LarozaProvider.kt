@@ -62,7 +62,7 @@ class LarozaProvider : MainAPI() {
                 val name = it.selectFirst("em")?.text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
-                val episode = name.toIntOrNull()
+                val episode = name?.toIntOrNull()
 
                 Episode(
                     href,
