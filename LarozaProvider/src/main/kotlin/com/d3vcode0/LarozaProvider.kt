@@ -62,7 +62,7 @@ class LarozaProvider : MainAPI() {
                 val name = it.select("em").text()
                 val href = it.attr("href")
                 val season = name.toIntOrNull()
-                val episode = it.parent().attr("data-serie").toIntOrNull()
+                val episode = it.parent()?.attr("data-serie").toIntOrNull()
 
                 Episode(
                     href,
@@ -77,7 +77,7 @@ class LarozaProvider : MainAPI() {
                 this.recommendations = recommendations
             }
         } else {
-            ewMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
