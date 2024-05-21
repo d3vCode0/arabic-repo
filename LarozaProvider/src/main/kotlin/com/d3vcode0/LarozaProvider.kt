@@ -32,6 +32,7 @@ class LarozaProvider : MainAPI() {
 
             return response
         }
+    }
     
 
     override val mainPage = mainPageOf(
