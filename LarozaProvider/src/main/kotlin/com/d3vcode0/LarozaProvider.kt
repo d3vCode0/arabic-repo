@@ -3,6 +3,7 @@ package com.d3vcode0
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
 
 
@@ -28,12 +29,14 @@ class LarozaProvider : MainAPI() {
         "$mainUrl/category.php?cat=masrh1&page=" to "مسرحيات",
     )
 
+    private val interceptor = CloudflareKiller()
+
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val headers = mapOf(
             "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
         )
-        val document = app.get(request.data + "$page&order=DESC", headers = headers).document
+        val document = app.get(request.data + "$page&order=DESC", interceptor = interceptor, headers = headers).document
         val home = document.select("ul#pm-grid li").mapNotNull {
             it.toSearchResult()
         }
@@ -46,7 +49,7 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/search.php?keywords=$query").document
+        val document = app.get("$mainUrl/search.php?keywords=$query", interceptor = interceptor).document
         return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
     }
 
@@ -58,6 +61,7 @@ class LarozaProvider : MainAPI() {
 
         val document = app.get(
             url,
+            interceptor = interceptor,
             timeout=80,
             headers = headers,
             ).document
