@@ -47,7 +47,7 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document        = app.get(url).document
+        val document        = app.get(url, timeout=80, headers=mapOf("Referer": url,"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0")).document
 
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
@@ -59,7 +59,7 @@ class LarozaProvider : MainAPI() {
 
         return if(tvType == TvType.TvSeries) {
             val episodes = document.select("div.SeasonsEpisodesMain div a").map {
-                val name = it.select("em").text()
+                val name = it.selectFirst("em").text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
                 val episode = name.toIntOrNull()
