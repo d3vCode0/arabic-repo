@@ -47,7 +47,7 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document        = app.get(url, timeout=80, headers=mapOf("Referer": url,"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0")).document
+        val document        = app.get(url, timeout=80, headers=mapOf("Referer" to url,"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0")).document
 
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
