@@ -17,26 +17,29 @@ class LarozaProvider : MainAPI() {
     override val mainPage = mainPageOf(
         "$mainUrl/category.php?cat=all_movies&page=" to "افلام اجنبية",
         "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
-        "$mainUrl/category.php?cat=indian-movies3&page=" to "افلام هندية",
-        "$mainUrl/category.php?cat=asian-movies&page=" to "افلام اسيوي",
-        "$mainUrl/category.php?cat=anime-movies&page=" to "افلام انمي",
-        "$mainUrl/category.php?cat=aflammdblgh&page=" to "افلام مدبلجة",
+        // "$mainUrl/category.php?cat=indian-movies3&page=" to "افلام هندية",
+        // "$mainUrl/category.php?cat=asian-movies&page=" to "افلام اسيوي",
+        // "$mainUrl/category.php?cat=anime-movies&page=" to "افلام انمي",
+        // "$mainUrl/category.php?cat=aflammdblgh&page=" to "افلام مدبلجة",
         "$mainUrl/category.php?cat=arabic-series30&page=" to "مسلسلات عربية",
         "$mainUrl/category.php?cat=english-series3&page=" to "مسلسلات اجنبية",
         "$mainUrl/category.php?cat=turkish-3isk-seriess30&page=" to "مسلسلات تركية",
-        "$mainUrl/category.php?cat=4indian-series&page=" to "مسلسلات هندية",
+        // "$mainUrl/category.php?cat=4indian-series&page=" to "مسلسلات هندية",
         "$mainUrl/category.php?cat=tv-programs5&page=" to "برامج تلفزيون",
         "$mainUrl/category.php?cat=masrh1&page=" to "مسرحيات",
     )
 
-    private val interceptor = CloudflareKiller()
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val cfBypass by lazy { CfBypass(cloudflareKiller) }
+    private var cookies: Map<String, String> = mapOf()
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val headers = mapOf(
-            "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
         )
-        val document = app.get(request.data + "$page&order=DESC", interceptor = interceptor, headers = headers).document
+        val res = app.get(request.data + "$page&order=DESC", interceptor = cfBypass)
+        cookies = res.cookies
+        val document = res.document
         val home = document.select("ul#pm-grid li").mapNotNull {
             it.toSearchResult()
         }
@@ -49,21 +52,22 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/search.php?keywords=$query", interceptor = interceptor).document
+        val document = app.get("$mainUrl/search.php?keywords=$query", interceptor = cfBypass).document
         return document.select("ul#pm-grid li").mapNotNull { it.toSearchResult() }
     }
 
     override suspend fun load(url: String): LoadResponse? {
         val headers = mapOf(
-            "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
         )
 
         val document = app.get(
             url,
-            interceptor = interceptor,
-            timeout=80,
+            referer = "$mainUrl/",
+            interceptor = cfBypass,
+            cookies = cookies,
             headers = headers,
+            timeout=80,
             ).document
 
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
