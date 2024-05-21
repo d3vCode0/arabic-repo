@@ -48,44 +48,40 @@ class LarozaProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val document        = app.get(url).document
+
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
         val description     = document.selectFirst("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
+        val tvType = if(title.contains("فيلم")) TvType.Movie else TvType.TvSeries
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
             it.toSearchResult()
         }
 
-        return if (url.contains("video")) {
-            if (title.contains("فيلم")) {
-                    newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
-                        this.posterUrl = poster
-                        this.plot = description
-                        this.recommendations = recommendations
-                }
-            } else {
-                val episodes = document.select("div.SeasonsEpisodesMain div").map {
-                    val href = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return null
-                    val name = it.selectFirst("a")?.text()?.trim()
-                    // val image = null
-                    val ep = it.selectFirst("a em")?.text()?.toIntOrNull()
-                    val season = it.attr("data-serie")?.toIntOrNull()
+        return if(tvType == TvType.TvSeries) {
+            val episodes = document.select("div.SeasonsEpisodesMain div a").map {
+                val name = it.select("em").text()
+                val href = it.attr("href")
+                val season = name.toIntOrNull()
+                val episode = it.parent().attr("data-serie").toIntOrNull()
 
-                    Episode(
-                        href,
-                        name,
-                        season,
-                        ep
-                    )
-                }
-
-                newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
-                    this.posterUrl = poster
-                    this.plot = description
-                    this.recommendations = recommendations
-                }
+                Episode(
+                    href,
+                    "$name الحلقة",
+                    season,
+                    episode
+                )
+            }
+            newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
             }
         } else {
-            null
+            ewMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+            }
         }
 
     }
