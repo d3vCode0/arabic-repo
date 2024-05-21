@@ -29,7 +29,11 @@ class LarozaProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data + "$page&order=DESC").document
+        val headers = mapOf(
+            "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
+        )
+        val document = app.get(request.data + "$page&order=DESC", headers = headers).document
         val home = document.select("ul#pm-grid li").mapNotNull {
             it.toSearchResult()
         }
@@ -48,7 +52,7 @@ class LarozaProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val headers = mapOf(
-            "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; _ga_JNMLXWW1J7=GS1.1.1716321739.12.1.1716322082.0.0.0; _ga=GA1.2.1433621871.1716127242; _ga_1E14BEYV8H=GS1.1.1716321739.12.1.1716322082.60.0.0; _gid=GA1.2.2114091540.1716127243; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
+            "Cookie" to "cf_clearance=AGzjkrApVlNVztoL5dam._vK8aBKz4Vw_rwcY4M4ZAs-1716325046-1.0.1.1-adGoMrbK_neowLkFCWGAxa0MoMrInL2n4LpOKYp4LjQDaE3FXD5nx6WaiCLG319If8AcdCuUUVrsjTXqU49KFQ; PHPSESSID=3eba63e1220a90f37d99c3ad10b03db1; pm_elastic_player=normal",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
         )
 
