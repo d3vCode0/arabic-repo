@@ -6,7 +6,8 @@ rootProject.name = "CloudstreamPlugins"
 // Plugins are included like this
 include(
     //"AnimercoProvider",
-    "LarozaProvider",
+    // "LarozaProvider",
+    "CimawbasProvider",
     // "CimalekProvider",
     //"HonadramaProvider",
     //"MavznProvider",

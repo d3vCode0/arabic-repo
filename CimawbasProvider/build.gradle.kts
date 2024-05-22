@@ -6,7 +6,7 @@ cloudstream {
     language = "ar"
     // All of these properties are optional, you can safely remove them
 
-    description = "سيما ليك مشاهدة الافلام و المسلسلات و الانمي"
+    description = "تحميل ومشاهدة افلام اون لاين اجنبية وعربية وهندية وكورية واسيوية وتركية"
     authors = listOf("d3vCode0")
 
     /**
@@ -20,8 +20,8 @@ cloudstream {
     tvTypes = listOf(
         "Movie",
         "TvSeries",
-        "Anime",
+        "Anime"
     )
 
-    iconUrl = "https://cimalek.art/wp-content/uploads/2022/11/cropped-fav-2-192x192.png"
+    iconUrl = "https://mycima.cc/templates/echo/img/apple-touch-icon.png"
 }
