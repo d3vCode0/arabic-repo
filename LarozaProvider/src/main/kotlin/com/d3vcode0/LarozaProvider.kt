@@ -59,21 +59,19 @@ class LarozaProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val headers = mapOf(
-            "Accept" to "*/*",
-            "Accept-Encoding" to "gzip, deflate, br, zstd",
-            "Connection" to "keep-alive",
             "Referer" to "https://google.com/",
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+            "User-Agent" to "Mozilla/5.0"
         )
         val document = app.get(
             url,
+            headers = headers,
             interceptor = cfKiller,
             cookies = cookies,
             timeout = 120
             ).document
 
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
-        val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
+        val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href")) ?: return null
         val description     = document.selectFirst("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
         val tvType = if(title.contains("فيلم")) TvType.Movie else TvType.TvSeries
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
@@ -82,7 +80,8 @@ class LarozaProvider : MainAPI() {
         val selectEpisode = document.select("div.SeasonsEpisodesMain div a")
 
         return if(tvType == TvType.TvSeries) {
-            val episodes = selectEpisode.map {
+            if (selectEpisode != null) {
+val episodes = selectEpisode.map {
                 val name = it.selectFirst("em")?.text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
@@ -97,16 +96,24 @@ class LarozaProvider : MainAPI() {
             }
             newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
-                // this.plot = description
-                // this.recommendations = recommendations
-                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+            }
+            } else {
+newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+            }
             }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
-                // this.plot = description
-                // this.recommendations = recommendations
-                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         }
 
