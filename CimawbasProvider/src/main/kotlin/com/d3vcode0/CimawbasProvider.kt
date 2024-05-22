@@ -111,7 +111,7 @@ class CimawbasProvider : MainAPI() {
         regex.findAll(doc).map { it.groupValues[1] }.forEach { link ->
             if(link.contains("vidspeeds")) {
                 val i_source = app.get("${link}", referer="${mainUrl}/").text
-                val m3u_link = Regex("""file:\"([^\"]+)""").find(i_source)?.groupValues?.get(1) ?: return ""
+                val m3u_link = Regex("""file:\"([^\"]+)""").find(i_source).groupValues.get(1)
                 
                 loadExtractor(m3u_link, data, subtitleCallback, callback)
             } else {
