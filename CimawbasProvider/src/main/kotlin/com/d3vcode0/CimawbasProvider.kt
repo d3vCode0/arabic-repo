@@ -3,6 +3,7 @@ package com.d3vcode0
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import org.jsoup.nodes.Element
 
 class CimawbasProvider : MainAPI() {
@@ -103,15 +104,14 @@ class CimawbasProvider : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
-        val iframe = document.select("ul.list_servers li").map {
+        app.get(data).document.select("ul.list_servers li").forEach {
             linkElement ->
             callback.invoke(
                 ExtractorLink(
-                    this.name,
-                    this.name,
-                    linkElement.attr("data-embed"),
-                    this.mainUrl
+                    source = this.name,
+                    name = this.name,
+                    url = linkElement.attr("data-embed"),
+                    referer = this.mainUrl
                 )
             )
         }
