@@ -101,7 +101,7 @@ class LarozaProvider : MainAPI() {
                 this.recommendations = recommendations
                 this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
-        } else if (selectEpisode.isEmpty() || selectEpisode == "[]") {
+        } else if (selectEpisode.isEmpty() || selectEpisode.toString() == "[]") {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = description
