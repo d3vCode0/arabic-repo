@@ -109,6 +109,13 @@ class CimawbasProvider : MainAPI() {
         val doc = app.get(data).text
         // val servers = doc.select("ul.list_servers li")
         regex.findAll(doc).map { it.groupValues[1] }.forEach { link ->
+            callback.invoke(
+                ExtractorLink(
+                    this.name,
+                    this.name,
+                    link
+                )
+            )
             loadExtractor(link, data, subtitleCallback, callback)
         }
         return true
