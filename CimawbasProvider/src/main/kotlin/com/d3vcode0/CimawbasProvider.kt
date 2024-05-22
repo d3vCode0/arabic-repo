@@ -113,11 +113,39 @@ class CimawbasProvider : MainAPI() {
                 val i_source = app.get("${link}", referer="${mainUrl}/").text
                 val m3u_link = Regex("""file:\"([^\"]+)""").find(i_source).groupValues.get(1)
                 
-                loadExtractor(m3u_link, data, subtitleCallback, callback)
+                loadCustomExtractor(m3u_link, "$mainUrl", subtitleCallback, callback)
             } else {
-                loadExtractor(m3u_link, data, subtitleCallback, callback)
+                loadCustomExtractor(link, "$mainUrl", subtitleCallback, callback)
             }
         }
         return true
+    }
+
+    private suspend fun loadCustomExtractor(
+        url: String,
+        referer: String? = null,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit,
+        quality: Int? = null,
+    ) {
+        loadExtractor(url, referer, subtitleCallback) { link ->
+            if(link.quality == Qualities.Unknown.value) {
+                callback.invoke(
+                    ExtractorLink(
+                        link.source,
+                        link.name,
+                        link.url,
+                        link.referer,
+                        when (link.type) {
+                            ExtractorLinkType.M3U8 -> link.quality
+                            else -> quality ?: link.quality
+                        },
+                        link.type,
+                        link.headers,
+                        link.extractorData
+                    )
+                )
+            }
+        }
     }
 }
