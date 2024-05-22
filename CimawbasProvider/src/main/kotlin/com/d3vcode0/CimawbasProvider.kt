@@ -62,6 +62,8 @@ class CimawbasProvider : MainAPI() {
         val document = app.get(url).document
 
         val title = document.selectFirst("h1[itemprop=name]")?.text()?.trim() ?: return null
+        val img = title.split("vid=")[1]
+        val posterUrl = "${mainUrl}/uploads/thumbs/${img}-1.jpg" ?: document.selectFirst("meta itemprop=thumbnailUrl")?.attr("content")
 
         val ep = document.select("div.AiredEPS a")
         Log.d("Episode", "If True » ${ep}")
@@ -93,5 +95,26 @@ class CimawbasProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         }
+    }
+
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val document = app.get(data).document
+        val iframe = document.select("ul.list_servers li").map {
+            linkElement ->
+            callback.invoke(
+                ExtractorLink(
+                    this.name,
+                    this.name,
+                    linkElement.attr("data-embed"),
+                    this.mainUrl
+                )
+            )
+        }
+        return true
     }
 }

@@ -23,5 +23,5 @@ cloudstream {
         "Anime"
     )
 
-    iconUrl = "https://mycima.cc/templates/echo/img/apple-touch-icon.png"
+    iconUrl = "https://mycima.cc/uploads/custom-logo.png"
 }
