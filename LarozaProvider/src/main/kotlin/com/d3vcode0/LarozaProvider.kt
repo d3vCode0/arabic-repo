@@ -9,7 +9,7 @@ import org.jsoup.nodes.Element
 
 class LarozaProvider : MainAPI() {
     override var mainUrl = "https://g.laroza.net"
-    private  val alternativeUrl = "https://laroza.net"
+    private  val alternativeUrl = "https://g.laroza.net"
     override var name = "Laroza"
     override val hasMainPage = true
     override var lang = "ar"
@@ -97,23 +97,16 @@ class LarozaProvider : MainAPI() {
             }
             newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
-                this.plot = description
-                this.recommendations = recommendations
-                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
-            }
-        } else if (selectEpisode.isEmpty() || selectEpisode.toString() == "[]") {
-            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot = description
-                this.recommendations = recommendations
-                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                // this.plot = description
+                // this.recommendations = recommendations
+                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
-                this.plot = description
-                this.recommendations = recommendations
-                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                // this.plot = description
+                // this.recommendations = recommendations
+                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         }
 
