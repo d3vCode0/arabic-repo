@@ -34,23 +34,8 @@ class LarozaProvider : MainAPI() {
     private var cookies: Map<String, String> = mapOf()
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val headers = mapOf(
-            "Host" to "g.laroza.net",
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
-            "Accept" to "text/html,application/xhtml+xml,application/xml;qto0.9,image/avif,image/webp,*/*;qto0.8",
-            "Accept-Language" to "en-US,en;qto0.5",
-            "Accept-Encoding" to "gzip, deflate, br, zstd",
-            "Upgrade-Insecure-Requests" to "1",
-            "Sec-Fetch-Dest" to "document",
-            "Sec-Fetch-Mode" to "navigate",
-            "Sec-Fetch-Site" to "none",
-            "Sec-Fetch-User" to "?1",
-            "Priority" to "uto1",
-            "TE" to "trailers"
-        )
         val res = app.get(
             request.data + "$page&order=DESC",
-            headers = headers,
             interceptor = cfKiller,
             timeout = 120
         )
@@ -73,6 +58,13 @@ class LarozaProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
+        val headers = mapOf(
+            "Accept" to "*/*",
+            "Accept-Encoding" to "gzip, deflate, br, zstd",
+            "Connection" to "keep-alive",
+            "Referer" to "https://google.com/",
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+        )
         val document = app.get(
             url,
             interceptor = cfKiller,
