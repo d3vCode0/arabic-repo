@@ -59,14 +59,12 @@ class LarozaProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val headers = mapOf(
-            "Accept" to "*/*",
-            "Accept-Encoding" to "gzip, deflate, br, zstd",
-            "Connection" to "keep-alive",
             "Referer" to "https://google.com/",
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+            "User-Agent" to "Mozilla/5.0"
         )
         val document = app.get(
             url,
+            headers = headers,
             interceptor = cfKiller,
             cookies = cookies,
             timeout = 120
@@ -97,16 +95,16 @@ class LarozaProvider : MainAPI() {
             }
             newTvSeriesLoadResponse(title.getCleaned(), url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
-                // this.plot = description
-                // this.recommendations = recommendations
-                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
                 this.posterUrl = poster
-                // this.plot = description
-                // this.recommendations = recommendations
-                // this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         }
 
