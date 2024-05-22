@@ -71,7 +71,7 @@ class LarozaProvider : MainAPI() {
             ).document
 
         val title           = document.selectFirst("div[itemprop=video] h1")?.text()?.trim() ?: return null
-        val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href"))
+        val poster          = fixUrlNull(document.selectFirst("link[rel=image_src]")?.attr("href")) ?: return null
         val description     = document.selectFirst("div.pm-video-info-contents p:nth-child(2)")?.text()?.trim() ?: return null
         val tvType = if(title.contains("فيلم")) TvType.Movie else TvType.TvSeries
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
@@ -80,7 +80,8 @@ class LarozaProvider : MainAPI() {
         val selectEpisode = document.select("div.SeasonsEpisodesMain div a")
 
         return if(tvType == TvType.TvSeries) {
-            val episodes = selectEpisode.map {
+            if (selectEpisode != null) {
+val episodes = selectEpisode.map {
                 val name = it.selectFirst("em")?.text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
@@ -98,6 +99,14 @@ class LarozaProvider : MainAPI() {
                 this.plot = description
                 this.recommendations = recommendations
                 this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+            }
+            } else {
+newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+            }
             }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
