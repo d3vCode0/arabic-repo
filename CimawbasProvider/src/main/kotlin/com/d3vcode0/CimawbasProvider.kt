@@ -65,7 +65,7 @@ class CimawbasProvider : MainAPI() {
 
         val ep = document.select("div.AiredEPS a")
         Log.d("Episode", "If True » ${ep}")
-        val episodes = if (ep.toString().length > 1) {
+        val episodes : List<Episode> = if (ep.toString().length > 1) {
             ep.map {
                 Episode(
                     data = it.attr("href").replace("watch", "see"),
@@ -73,7 +73,7 @@ class CimawbasProvider : MainAPI() {
                 )
             }
         } else {
-            null
+            emptyList()
         }
         
         return if (title.contains("فيلم")) {
