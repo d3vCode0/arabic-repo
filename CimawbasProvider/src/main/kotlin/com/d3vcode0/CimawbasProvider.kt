@@ -110,12 +110,12 @@ class CimawbasProvider : MainAPI() {
         // val servers = doc.select("ul.list_servers li")
         regex.findAll(doc).map { it.groupValues[1] }.forEach { link ->
             if(link.contains("vidspeeds")) {
-                val i_source = app.get("${link}", referer="${mainUrl}/").text
-                val m3u_link = Regex("""file:\"([^\"]+)""").find(i_source).groupValues.get(1)
-                
-                loadCustomExtractor(m3u_link, "$mainUrl", subtitleCallback, callback)
+                val iSource = app.get(link, referer="${mainUrl}/").text
+                val m3uLink = Regex("""file:"([^"]+)""").find(iSource)?.groupValues?.get(1)
+
+                m3uLink?.let { loadCustomExtractor(it, mainUrl, subtitleCallback, callback) }
             } else {
-                loadCustomExtractor(link, "$mainUrl", subtitleCallback, callback)
+                loadCustomExtractor(link, mainUrl, subtitleCallback, callback)
             }
         }
         return true
