@@ -113,14 +113,12 @@ class CimawbasProvider : MainAPI() {
             if(link.contains("vidspeeds")) {
                 val i_source = app.get("${link}", referer="${mainUrl}/").text
                 val m3u_link = Regex("""file:\"([^\"]+)""").find(i_source)?.groupValues?.get(1)
-                callback.invoke(
-                    ExtractorLink(
+                ExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = m3u_link,
                         referer = "${mainUrl}/",
                         isM3u8 = true
-                    )
                 )
                 // loadExtractor(m3u_link, data, subtitleCallback, callback)
             } else {
