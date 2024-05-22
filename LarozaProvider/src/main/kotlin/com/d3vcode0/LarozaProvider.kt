@@ -79,9 +79,10 @@ class LarozaProvider : MainAPI() {
         val recommendations = document.select("div#pm-related ul li").mapNotNull {
             it.toSearchResult()
         }
+        val selectEpisode = document.select("div.SeasonsEpisodesMain div a")
 
         return if(tvType == TvType.TvSeries) {
-            val episodes = document.select("div.SeasonsEpisodesMain div a").map {
+            val episodes = selectEpisode.map {
                 val name = it.selectFirst("em")?.text()
                 val href = it.attr("href")
                 val season = it.parent()?.attr("data-serie")?.toIntOrNull()
@@ -98,6 +99,14 @@ class LarozaProvider : MainAPI() {
                 this.posterUrl = poster
                 this.plot = description
                 this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
+            }
+        } else if (selectEpisode.isEmpty() || selectEpisode == "[]") {
+            newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+                this.recommendations = recommendations
+                this.posterHeaders = cfKiller.getCookieHeaders(alternativeUrl).toMap()
             }
         } else {
             newMovieLoadResponse(title.getCleaned(), url, TvType.Movie, url) {
