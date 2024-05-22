@@ -18,16 +18,16 @@ class LarozaProvider : MainAPI() {
     
     override val mainPage = mainPageOf(
         "$mainUrl/category.php?cat=all_movies&page=" to "افلام اجنبية",
-        "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
+        // "$mainUrl/category.php?cat=arabic-movies17&page=" to "افلام عربية",
         // "$mainUrl/category.php?cat=indian-movies3&page=" to "افلام هندية",
         // "$mainUrl/category.php?cat=asian-movies&page=" to "افلام اسيوي",
         // "$mainUrl/category.php?cat=anime-movies&page=" to "افلام انمي",
         // "$mainUrl/category.php?cat=aflammdblgh&page=" to "افلام مدبلجة",
-        "$mainUrl/category.php?cat=arabic-series30&page=" to "مسلسلات عربية",
+        // "$mainUrl/category.php?cat=arabic-series30&page=" to "مسلسلات عربية",
         "$mainUrl/category.php?cat=english-series3&page=" to "مسلسلات اجنبية",
         "$mainUrl/category.php?cat=turkish-3isk-seriess30&page=" to "مسلسلات تركية",
         // "$mainUrl/category.php?cat=4indian-series&page=" to "مسلسلات هندية",
-        "$mainUrl/category.php?cat=tv-programs5&page=" to "برامج تلفزيون",
+        // "$mainUrl/category.php?cat=tv-programs5&page=" to "برامج تلفزيون",
         "$mainUrl/category.php?cat=masrh1&page=" to "مسرحيات",
     )
 
@@ -35,9 +35,25 @@ class LarozaProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
+            "Host" to "g.laroza.net",
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+            "Accept" to "text/html,application/xhtml+xml,application/xml;qto0.9,image/avif,image/webp,*/*;qto0.8",
+            "Accept-Language" to "en-US,en;qto0.5",
+            "Accept-Encoding" to "gzip, deflate, br, zstd",
+            "Upgrade-Insecure-Requests" to "1",
+            "Sec-Fetch-Dest" to "document",
+            "Sec-Fetch-Mode" to "navigate",
+            "Sec-Fetch-Site" to "none",
+            "Sec-Fetch-User" to "?1",
+            "Priority" to "uto1",
+            "TE" to "trailers"
         )
-        val res = app.get(request.data + "$page&order=DESC", interceptor = cfKiller, timeout = 120)
+        val res = app.get(
+            request.data + "$page&order=DESC",
+            headers = headers,
+            interceptor = cfKiller,
+            timeout = 120
+        )
         cookies = res.cookies
         val document = res.document
         val home = document.select("ul#pm-grid li").mapNotNull {
