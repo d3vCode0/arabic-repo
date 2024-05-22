@@ -106,11 +106,14 @@ class CimawbasProvider : MainAPI() {
     ): Boolean {
         app.get(data).document.select("ul.list_servers li").forEach {
             linkElement ->
+            val srcPattern = "src='(.*?)'".toRegex()
+            val matchResult = srcPattern.find(linkElement.attr("data-embed"))
+            val srcValue = matchResult?.groups?.get(1)?.value
             callback.invoke(
                 ExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = linkElement.attr("data-embed"),
+                    url = srcValue,
                     referer = this.mainUrl
                 )
             )
