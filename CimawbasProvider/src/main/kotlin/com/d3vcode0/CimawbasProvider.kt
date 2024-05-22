@@ -4,6 +4,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 
 class CimawbasProvider : MainAPI() {
@@ -104,19 +105,11 @@ class CimawbasProvider : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        app.get(data).document.select("ul.list_servers li").forEach {
-            linkElement ->
-            val srcPattern = "src='(.*?)'".toRegex()
-            val result = srcPattern.find(linkElement.attr("data-embed"))
-            val srcValue = result?.groups?.get(1)?.value
-            callback.invoke(
-                ExtractorLink(
-                    source = this.name,
-                    name = this.name,
-                    url = srcValue ?: "",
-                    referer = this.mainUrl
-                )
-            )
+        val regex = Regex("""<iframe.*?src=['"]([^'"]+)['"]""")
+        app.get(data).document.select("ul.list_servers li").map {
+            regex.findAll(document).map { it.groupValues[1] }.forEach { link ->
+                loadExtractor(link, data, subtitleCallback, callback)
+            }
         }
         return true
     }
