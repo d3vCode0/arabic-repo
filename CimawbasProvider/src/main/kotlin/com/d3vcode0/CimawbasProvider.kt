@@ -106,10 +106,10 @@ class CimawbasProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val regex = Regex("""<iframe.*?src=['"]([^'"]+)['"]""")
-        app.get(data).document.select("ul.list_servers li").map {
-            regex.findAll(document).map { it.groupValues[1] }.forEach { link ->
-                loadExtractor(link, data, subtitleCallback, callback)
-            }
+        val doc = app.get(data).document
+        // val servers = doc.select("ul.list_servers li")
+        regex.findAll(doc).map { it.groupValues[1] }.forEach { link ->
+            loadExtractor(link, data, subtitleCallback, callback)
         }
         return true
     }
