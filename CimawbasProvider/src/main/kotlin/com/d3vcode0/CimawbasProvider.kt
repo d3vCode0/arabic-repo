@@ -64,7 +64,7 @@ class CimawbasProvider : MainAPI() {
         val document = app.get(url).document
 
         val title = document.selectFirst("h1[itemprop=name]")?.text()?.trim() ?: return null
-        val img = title.split("vid=")[1]
+        val img = url.split("vid=")[1]
         val posterUrl = "${mainUrl}/uploads/thumbs/${img}-1.jpg" ?: document.selectFirst("meta itemprop=thumbnailUrl")?.attr("content")
 
         val ep = document.select("div.AiredEPS a")
