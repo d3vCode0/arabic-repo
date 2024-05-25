@@ -23,24 +23,24 @@ class AnimercoProvider : MainAPI() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val regex = Regex("animes|seasons")
         val isTrue = regex.containsMatchIn(request.data)
-        val document = if(isTrue){
+        val home = if(isTrue){
 
             val document = app.get(request.data + "page/$page/").document
-            val home = document.select("div.page-content .row div.box-5x1").mapNotNull {
+            document.select("div.page-content .row div.box-5x1").mapNotNull {
                 it.toSearchResult()
             }
 
         } else if(request.data.contains("episodes")) {
 
             val document = app.get(request.data + "page/$page/").document
-            val home = document.select("div.page-content .row div.col-12").mapNotNull {
+            document.select("div.page-content .row div.col-12").mapNotNull {
                 it.toSearchResult()
             }
 
         }else {
             val document = app.get(request.data).document
 
-            val home = document.select("div.tabs-wraper").mapNotNull {
+            document.select("div.tabs-wraper").mapNotNull {
                 it.toSearchToday()
             }
 
@@ -67,12 +67,12 @@ class AnimercoProvider : MainAPI() {
     private fun Element.toSearchToday(): SearchResponse? {
         val now = LocalDate.now()
         val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
-        val days = this.select("div.tabs-wraper div#$weekday div.box-5x1").map {
+        return this.select("div.tabs-wraper div#$weekday div.box-5x1").map {
             val title = it.selectFirst("div.info h3")!!.text()
             val href = it.selectFirst("a")!!.attr("href")
             val posterUrl = it.selectFirst("a")!!.attr("data-src")
-            
-            return newAnimeSearchResponse(title, href, TvType.Anime) {
+
+            newAnimeSearchResponse(title, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
         }
