@@ -34,13 +34,7 @@ class AnimercoProvider : MainAPI() {
 
             val document = app.get(request.data + "page/$page/").document
             document.select("div.page-content .row div.col-12").mapNotNull {
-                val title = it.selectFirst("div.info h3")!!.text()
-                val href = it.selectFirst("a")!!.attr("href")
-                val posterUrl = it.selectFirst("a")!!.attr("data-src")
-
-                newAnimeSearchResponse(title, href, TvType.Anime) {
-                    this.posterUrl = posterUrl
-                }
+                it.toSearchResult()
             }
 
         }else {
@@ -50,7 +44,13 @@ class AnimercoProvider : MainAPI() {
             val document = app.get(request.data).document
 
             document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
-                it.toSearchToday()
+                val title = it.selectFirst("div.info h3")!!.text()
+                val href = it.selectFirst("a")!!.attr("href")
+                val posterUrl = it.selectFirst("a")!!.attr("data-src")
+
+                newAnimeSearchResponse(title, href, TvType.Anime) {
+                    this.posterUrl = posterUrl
+                }
             }
 
         }
