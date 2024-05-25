@@ -34,13 +34,22 @@ class AnimercoProvider : MainAPI() {
 
             val document = app.get(request.data + "page/$page/").document
             document.select("div.page-content .row div.col-12").mapNotNull {
-                it.toSearchResult()
+                val title = it.selectFirst("div.info h3")!!.text()
+                val href = it.selectFirst("a")!!.attr("href")
+                val posterUrl = it.selectFirst("a")!!.attr("data-src")
+
+                newAnimeSearchResponse(title, href, TvType.Anime) {
+                    this.posterUrl = posterUrl
+                }
             }
 
         }else {
+
+            val now = LocalDate.now()
+            val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
             val document = app.get(request.data).document
 
-            document.select("div.tabs-wraper").mapNotNull {
+            document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
                 it.toSearchToday()
             }
 
@@ -64,19 +73,4 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
-    private fun Element.toSearchToday(): SearchResponse? {
-        val now = LocalDate.now()
-        val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
-        val home = this.select("div#$weekday div.box-5x1")
-        val searchResults = home.map {
-            val title = it.selectFirst("div.info h3")!!.text()
-            val href = it.selectFirst("a")!!.attr("href")
-            val posterUrl = it.selectFirst("a")!!.attr("data-src")
-
-            newAnimeSearchResponse(title, href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
-        }
-        return if (searchResults.isNotEmpty()) searchResults else null
-    }
 }
