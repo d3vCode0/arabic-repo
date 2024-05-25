@@ -57,7 +57,7 @@ class AnimercoProvider : MainAPI() {
             HomePageList(request.name, list, false)
 
         }
-        return newHomePageResponse(request.name, home)
+        return newHomePageResponse(home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
