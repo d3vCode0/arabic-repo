@@ -77,6 +77,6 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         }
-        return if (searchResults.isNotEmpty()) SearchResponse(searchResults) else null
+        return if (searchResults.isNotEmpty()) searchResults else null
     }
 }
