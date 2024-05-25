@@ -68,7 +68,7 @@ class AnimercoProvider : MainAPI() {
         val now = LocalDate.now()
         val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
         val home = this.select("div#$weekday div.box-5x1")
-        return home.map {
+        val searchResults = home.map {
             val title = it.selectFirst("div.info h3")!!.text()
             val href = it.selectFirst("a")!!.attr("href")
             val posterUrl = it.selectFirst("a")!!.attr("data-src")
@@ -77,5 +77,6 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         }
+        return if (searchResults.isNotEmpty()) SearchResponse(searchResults) else null
     }
 }
