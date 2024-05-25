@@ -26,16 +26,18 @@ class AnimercoProvider : MainAPI() {
         val home = if(isTrue){
 
             val document = app.get(request.data + "page/$page/").document
-            document.select("div.page-content .row div.box-5x1").mapNotNull {
+            val list = document.select("div.page-content .row div.box-5x1").mapNotNull {
                 it.toSearchResult()
             }
+            HomePageList(request.name, list, false)
 
         } else if(request.data.contains("episodes")) {
 
             val document = app.get(request.data + "page/$page/").document
-            document.select("div.page-content .row div.col-12").mapNotNull {
+            val list = document.select("div.page-content .row div.col-12").mapNotNull {
                 it.toSearchResult()
             }
+            HomePageList(request.name, list, true)
 
         }else {
 
@@ -43,7 +45,7 @@ class AnimercoProvider : MainAPI() {
             val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
             val document = app.get(request.data).document
 
-            document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
+            val list = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
                 val title = it.selectFirst("div.info h3")!!.text()
                 val href = it.selectFirst("a")!!.attr("href")
                 val posterUrl = it.selectFirst("a")!!.attr("data-src")
@@ -52,6 +54,7 @@ class AnimercoProvider : MainAPI() {
                     this.posterUrl = posterUrl
                 }
             }
+            HomePageList(request.name, list, false)
 
         }
         return newHomePageResponse(request.name, home)
