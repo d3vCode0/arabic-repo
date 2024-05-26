@@ -24,15 +24,15 @@ class AnimercoProvider : MainAPI() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val regex = Regex("animes|seasons|movies")
         val isTrue = regex.containsMatchIn(request.data)
-        val home = if(isTrue){
+        val home = if(isTrue == true){
 
             val document = app.get(request.data + "page/$page/").document
             val list = document.select("div.page-content .row div.box-5x1").mapNotNull {
                 it.toSearchResult()
             }
-            HomePageList(request.name, list, true)
+            HomePageList(request.name, list, false)
 
-        } else if(request.data.contains("episodes")) {
+        } else if(request.data.contains("episodes") == true) {
 
             val document = app.get(request.data + "page/$page/").document
             val list = document.select("div.page-content .row div.col-12").mapNotNull {
@@ -58,7 +58,7 @@ class AnimercoProvider : MainAPI() {
             HomePageList(request.name, list, false)
 
         }
-        return newHomePageResponse(home, hasNext = !request.name.contains("Schedule"))
+        return newHomePageResponse(home)
     }
 
     override suspend fun load(url: String): LoadResponse? {
@@ -77,7 +77,7 @@ class AnimercoProvider : MainAPI() {
         val regex = Regex("animes|seasons|movies")
         val txt = url.split("/")[3]
         val isTrue = regex.containsMatchIn(txt)
-        return if(isTrue) {
+        return if(isTrue == true) {
             //Animes & Seasons
             //TODO: add episodes
             newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
