@@ -67,17 +67,33 @@ class AnimercoProvider : MainAPI() {
         } else if (url.contains("animes")) {
             //get list seasons > episodes
             val seasonList = document.selectFirst("ul.episodes-lists li")
-            val episodes = arrayListOf<Episode>()
+            val episodes = mutableListOf<Episode>()
+            seasonList.map { ele ->
+                val page = ele.selectFirst("a.title")
+                val epsDoc = app.get(page?.attr("href") ?: return@map).document
+                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
+                    episodes.add(
+                        Episode(
+                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
+                            season = ele?.attr("data-number").toIntOrNull()
+                        )
+                    )
+                }
+            }
             
-            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
-                this.episodes = episodes
+                addEpisodes(
+                    DubStatus.Subbed,
+                    episodes
+                )
             }
         } else if (url.contains("seasons")) {
             //list episodes
-            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
