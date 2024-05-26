@@ -69,9 +69,9 @@ class AnimercoProvider : MainAPI() {
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
         val tags = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
         val plot = document.selectFirst("div.content p")?.text()?.trim() ?: return null
-        val tv = document.selectFirst("ul.media-info li:contains(النوع:) span")?.text()
+        val tv = document.selectFirst("ul.media-info li:contains(النوع:) span")?.text() ?: return null
         val tvType = if(!tv?.contains("Movie")) TvType.AnimeMovie else TvType.Anime
-        val status = document.selectFirst("div.status")?.text()?.trim()
+        val status = document.selectFirst("div.status")?.text()?.trim() ?: return null
         val showStatus = if(!status?.contains("مكتمل")) ShowStatus.Completed else if(!status?.contains("يعرض الأن")) ShowStatus.Ongoing else null
 
         val regex = Regex("animes|seasons|movies")
