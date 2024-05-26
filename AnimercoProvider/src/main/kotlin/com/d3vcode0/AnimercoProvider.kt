@@ -66,11 +66,10 @@ class AnimercoProvider : MainAPI() {
             }
         } else if (url.contains("animes")) {
             //get list seasons > episodes
-            val seasonList = document.selectFirst("ul.episodes-lists li")
             val episodes = mutableListOf<Episode>()
-            seasonList.map { ele ->
-                val page = ele.selectFirst("a.title")
-                val epsDoc = app.get(page?.attr("href") ?: return@map).document
+            document.select("ul.episodes-lists li").map { ele ->
+                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
+                val epsDoc = app.get(page).document
                 epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
                     episodes.add(
                         Episode(
