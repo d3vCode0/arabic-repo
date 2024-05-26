@@ -52,7 +52,7 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
-    verride suspend fun load(url: String): LoadResponse? {
+    override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
         val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val titleEng = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
@@ -104,7 +104,7 @@ class AnimercoProvider : MainAPI() {
             }
         } else {
             val s = this.selectFirst("div.info a.extra h4")?.text()?.trim()?.replace("الموسم ", "") ?: return null
-            val t = if(t.isNullOrEmpty()) title else "${title} S${s}"
+            val t = if(s.isNullOrEmpty()) title else "${title} S${s}"
             newAnimeSearchResponse(t, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
