@@ -102,7 +102,7 @@ class AnimercoProvider : MainAPI() {
                     episodes.add(
                         Episode(
                             eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            season = ele?.attr("data-number")?.toIntOrNull(),
+                            // season = ele?.attr("data-number")?.toIntOrNull(),
                             episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
                             posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
                             description = plot
