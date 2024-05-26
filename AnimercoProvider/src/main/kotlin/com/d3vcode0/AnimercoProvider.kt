@@ -58,10 +58,10 @@ class AnimercoProvider : MainAPI() {
             HomePageList(request.name, list, false)
 
         }
-        return newHomePageResponse(home, hasNext = !request.name("Schedule"))
+        return newHomePageResponse(home, hasNext = !request.name.contains("Schedule"))
     }
 
-    override suspend fun load(url: String): LoadResponse {
+    override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
         val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val titleEng = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
@@ -76,7 +76,8 @@ class AnimercoProvider : MainAPI() {
 
         val regex = Regex("animes|seasons|movies")
         val txt = url.split("/")[3]
-        if(txt) {
+        val isTrue = regex.containsMatchIn(txt)
+        if(isTrue) {
             //Animes & Seasons
             //TODO: add episodes
             newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
