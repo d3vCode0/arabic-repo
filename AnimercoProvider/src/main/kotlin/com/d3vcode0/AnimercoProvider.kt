@@ -52,6 +52,42 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
+    verride suspend fun load(url: String): LoadResponse? {
+        val document = app.get(url).document
+        val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val titleEng = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
+        val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+
+        return if (url.contains("movies")) {
+            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+                this.engName = titleEng
+                this.japName = titleJap
+                this.posterUrl = posterUrl
+            }
+        } else if (url.contains("animes")) {
+            //get list seasons > episodes
+            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+                this.engName = titleEng
+                this.japName = titleJap
+                this.posterUrl = posterUrl
+            }
+        } else if (url.contains("seasons")) {
+            //list episodes
+            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+                this.engName = titleEng
+                this.japName = titleJap
+                this.posterUrl = posterUrl
+            }
+        } else {
+            //episode
+            val title = document.selectFirst("div.container h1")?.text()?.trim() ?: return null
+            val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
+            newMovieLoadResponse(title, url, TvType.Anime, url) {
+                this.posterUrl = posterUrl
+            }
+        }
+    }
+
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
         val href = this.selectFirst("a")?.attr("href") ?: return null
@@ -67,7 +103,9 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         } else {
-            newAnimeSearchResponse(title, href, TvType.Anime) {
+            val s = this.selectFirst("div.info a.extra h4")?.text()?.trim()?.replace("الموسم ", "") ?: return null
+            val t = if(t.isNullOrEmpty()) title else "${title} S${s}"
+            newAnimeSearchResponse(t, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
         }
