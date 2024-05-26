@@ -80,7 +80,6 @@ class AnimercoProvider : MainAPI() {
                             season = ele?.attr("data-number")?.toIntOrNull(),
                             episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
                             posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                            description = plot
                         )
                     )
                 }
@@ -90,6 +89,8 @@ class AnimercoProvider : MainAPI() {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
+                this.plot = plot
+                this.tags = tags
                 addEpisodes(
                     DubStatus.Subbed,
                     episodes
@@ -105,7 +106,6 @@ class AnimercoProvider : MainAPI() {
                             // season = ele?.attr("data-number")?.toIntOrNull(),
                             episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
                             posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                            description = plot
                         )
                     )
                 }
@@ -114,6 +114,8 @@ class AnimercoProvider : MainAPI() {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
+                this.plot = plot
+                this.tags = tags
                 addEpisodes(
                     DubStatus.Subbed,
                     episodes
@@ -123,7 +125,7 @@ class AnimercoProvider : MainAPI() {
             //episode
             val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
             val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
-            newAnimeLoadResponse(episodeTitle, url, TvType.Anime, true) {
+            newMovieLoadResponse(episodeTitle, url, TvType.AnimeMovie, url) {
                 this.posterUrl = posterUrl
             }
         }
