@@ -109,7 +109,7 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         } else {
-            newAnimeSearchResponse(titleEng, href, TvType.Anime) {
+            newAnimeSearchResponse(title, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
         }
