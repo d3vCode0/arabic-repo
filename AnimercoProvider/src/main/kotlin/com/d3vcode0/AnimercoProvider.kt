@@ -59,7 +59,7 @@ class AnimercoProvider : MainAPI() {
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
 
         return if (url.contains("movies")) {
-            newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
+            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
@@ -80,9 +80,9 @@ class AnimercoProvider : MainAPI() {
             }
         } else {
             //episode
-            val title = document.selectFirst("div.container h1")?.text()?.trim() ?: return null
+            val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
             val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
-            newMovieLoadResponse(title, url, TvType.Anime, url) {
+            newAnimeLoadResponse(episodeTitle, url, TvType.Anime, true) {
                 this.posterUrl = posterUrl
             }
         }
