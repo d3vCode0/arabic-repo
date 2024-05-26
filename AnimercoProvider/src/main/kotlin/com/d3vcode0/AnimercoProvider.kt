@@ -57,12 +57,15 @@ class AnimercoProvider : MainAPI() {
         val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val titleEng = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+        val tags = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
+        val plot = document.selectFirst("div.content p")?.text()?.trim() ?: return null
 
         return if (url.contains("movies")) {
-            newAnimeLoadResponse(titleJap, url, TvType.Anime, false) {
-                this.engName = titleEng
-                this.japName = titleJap
+            newMovieLoadResponse(titleJap, url, TvType.AnimeMovie, url) {
+                this.name = titleEng
                 this.posterUrl = posterUrl
+                this.plot = plot
+                this.tags = tags
             }
         } else if (url.contains("animes")) {
             //get list seasons > episodes
@@ -74,8 +77,10 @@ class AnimercoProvider : MainAPI() {
                     episodes.add(
                         Episode(
                             eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            season = ele?.attr("data-number")?.toIntOrNull(),
                             episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            season = ele?.attr("data-number")?.toIntOrNull()
+                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
+                            description = plot
                         )
                     )
                 }
@@ -92,10 +97,27 @@ class AnimercoProvider : MainAPI() {
             }
         } else if (url.contains("seasons")) {
             //list episodes
+            val episodes = mutableListOf<Episode>()
+            document.select("ul.episodes-lists li").mapNotNull { eps ->
+                    episodes.add(
+                        Episode(
+                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            season = ele?.attr("data-number")?.toIntOrNull(),
+                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
+                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
+                            description = plot
+                        )
+                    )
+                }
+
             newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
+                addEpisodes(
+                    DubStatus.Subbed,
+                    episodes
+                )
             }
         } else {
             //episode
