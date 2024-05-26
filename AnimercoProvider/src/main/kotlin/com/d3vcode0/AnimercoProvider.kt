@@ -75,7 +75,7 @@ class AnimercoProvider : MainAPI() {
                         Episode(
                             eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
                             episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            season = ele?.attr("data-number").toIntOrNull()
+                            season = ele?.attr("data-number")?.toIntOrNull()
                         )
                     )
                 }
