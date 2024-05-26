@@ -59,17 +59,30 @@ class AnimercoProvider : MainAPI() {
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
 
         return if (url.contains("movies")) {
-            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
+            newAnimeLoadResponse(titleJap, url, TvType.Anime, false) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
             }
         } else if (url.contains("animes")) {
             //get list seasons > episodes
+            val seasonList = document.selectFirst("ul.episodes-lists li")
+            val episodes = arrayListOf<Episode>()
+            seasonList.apmap { season -> 
+                app.get(season.select("a")?.attr("href")).document.select("ul.episodes-lists li").apmap {
+                    episodes.add(Episode(
+                        it.select("a.title").attr("href"),
+                        it.select("a.title h3").text(),
+                        season.select("a.title h3").text(),
+                        it.select("a.title h3").getIntFromText()
+                    ))
+                }
+            }
             newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
                 this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
+                this.episodes = episodes
             }
         } else if (url.contains("seasons")) {
             //list episodes
@@ -125,4 +138,9 @@ class AnimercoProvider : MainAPI() {
             this.posterUrl = posterUrl
         }
     }
+
+    private fun String.getIntFromText(): Int? {
+        return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
+    }
+
 }
