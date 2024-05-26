@@ -93,7 +93,7 @@ class AnimercoProvider : MainAPI() {
         val href = this.selectFirst("a")?.attr("href") ?: return null
         val posterUrl = this.selectFirst("a")?.attr("data-src") ?: return null
         return if (href.contains("movies")) {
-            newMovieSearchResponse(title, href, TvType.Anime) {
+            newMovieSearchResponse(title, href, TvType.AnimeMovie) {
                 this.posterUrl = posterUrl
             }
         } else if (href.contains("episodes")) {
@@ -102,10 +102,14 @@ class AnimercoProvider : MainAPI() {
             newAnimeSearchResponse("${title} S${s}-E${e}", href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
-        } else {
+        } else if (href.contains("seasons")) {
             val s = this.selectFirst("div.info a.extra h4")?.text()?.trim()?.replace("الموسم ", "") ?: return null
             val t = if(s.isNullOrEmpty()) title else "${title} S${s}"
             newAnimeSearchResponse(t, href, TvType.Anime) {
+                this.posterUrl = posterUrl
+            }
+        } else {
+            newAnimeSearchResponse(titleEng, href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
         }
