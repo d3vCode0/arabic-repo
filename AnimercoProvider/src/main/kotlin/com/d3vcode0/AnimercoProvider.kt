@@ -70,14 +70,14 @@ class AnimercoProvider : MainAPI() {
         val tags = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
         val plot = document.selectFirst("div.content p")?.text()?.trim() ?: return null
         val tv = document.selectFirst("ul.media-info li:contains(النوع:) span")?.text()
-        val tvType = if(tv.contains("Movie")) TvType.AnimeMovie else TvType.Anime
+        val tvType = if(tv?.contains("Movie")) TvType.AnimeMovie else TvType.Anime
         val status = document.selectFirst("div.status")?.text()?.trim()
-        val showStatus = if(status.contains("مكتمل")) ShowStatus.Completed else if(status.contains("يعرض الأن")) ShowStatus.Ongoing else null
+        val showStatus = if(status?.contains("مكتمل")) ShowStatus.Completed else if(status?.contains("يعرض الأن")) ShowStatus.Ongoing else null
 
         val regex = Regex("animes|seasons|movies")
         val txt = url.split("/")[3]
         val isTrue = regex.containsMatchIn(txt)
-        if(isTrue) {
+        return if(isTrue) {
             //Animes & Seasons
             //TODO: add episodes
             newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
