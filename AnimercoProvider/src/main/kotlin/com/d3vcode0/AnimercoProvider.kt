@@ -30,7 +30,7 @@ class AnimercoProvider : MainAPI() {
             val list = document.select("div.page-content .row div.box-5x1").mapNotNull {
                 it.toSearchResult()
             }
-            HomePageList(request.name, list, false)
+            HomePageList(request.name, list, true)
 
         } else if(request.data.contains("episodes")) {
 
@@ -113,7 +113,7 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl = posterUrl
             }
         } else {
-            newAnimeSearchResponse("$title Se-$e", href, TvType.Anime) {
+            newAnimeSearchResponse("$title S$s-$e", href, TvType.Anime) {
                 this.posterUrl = posterUrl
             }
         }
