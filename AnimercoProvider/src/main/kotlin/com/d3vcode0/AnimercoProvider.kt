@@ -68,14 +68,21 @@ class AnimercoProvider : MainAPI() {
             //get list seasons > episodes
             val seasonList = document.selectFirst("ul.episodes-lists li")
             val episodes = arrayListOf<Episode>()
-            seasonList.apmap { season -> 
-                app.get(season.select("a")?.attr("href")).document.select("ul.episodes-lists li").apmap {
-                    episodes.add(Episode(
-                        it.select("a.title").attr("href"),
-                        it.select("a.title h3").text(),
-                        season.select("a.title h3").text(),
-                        it.select("a.title h3").getIntFromText()
-                    ))
+            seasonList?.let { list ->
+                list.map { season ->
+                    val seasonTitle = season.select("a.title h3").text()
+                    val seasonEpisodesUrl = season.select("a")?.attr("href")
+
+                    seasonEpisodesUrl?.let { url -> 
+                        app.get(url).document.select("ul.episodes-lists li").map { episode ->
+                            episodes.add(Episode(
+                                episode.select("a.title").attr("href"),
+                                episode.select("a.title h3").text(),
+                                seasonTitle,
+                                episode.select("a.title h3").getIntFromText()
+                            ))
+                        }
+                    }
                 }
             }
             newAnimeLoadResponse(titleEng, url, TvType.Anime, true) {
