@@ -16,7 +16,7 @@ class AnimercoProvider : MainAPI() {
     val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
     override val mainPage = mainPageOf(
-        "$mainUrl/schedule/" to "يعرض اليوم ${weekday}",
+        "$mainUrl/schedule/" to "يعرض اليوم ${weekday.toDayar()}",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -24,7 +24,11 @@ class AnimercoProvider : MainAPI() {
         val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
             it.toSearchSchedule()
         }
-        return newHomePageResponse(request.name, home, false)
+        return newHomePageResponse(
+            items = request.name,
+            list = home,
+            hasNext = false
+        )
     }
 
     private fun Element.toSearchSchedule(): SearchResponse? {
@@ -35,6 +39,19 @@ class AnimercoProvider : MainAPI() {
 
         return newAnimeSearchResponse("${title} S${season}", href, TvType.Anime) {
             this.posterUrl = posterUrl
+        }
+    }
+
+    fun String.toDayar(): String {
+        return when(this) {
+            "monday" -> "الإثنين"
+            "tuesday" -> "الثلاثاء"
+            "wednesday" -> "الأربعاء"
+            "thursday" -> "الخميس"
+            "friday" -> "الجمعة"
+            "saturday" -> "السبت"
+            "sunday" -> "الأحد"
+            else -> "error"
         }
     }
 }
