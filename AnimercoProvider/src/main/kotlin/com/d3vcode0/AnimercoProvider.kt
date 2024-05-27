@@ -12,155 +12,17 @@ class AnimercoProvider : MainAPI() {
     override val hasMainPage = true
     override var lang = "ar"
     override val supportedTypes = setOf(TvType.AnimeMovie, TvType.Anime)
+    override val now = LocalDate.now()
+    override val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
     override val mainPage = mainPageOf(
-        "$mainUrl/animes/" to "قائمة الأنمي",
-        "$mainUrl/movies/" to "قائمة الأفلام",
-        "$mainUrl/seasons/" to "قائمة المواسم",
-        "$mainUrl/episodes/" to "قائمة الحلقات ",
-        "$mainUrl/schedule/" to "يعرض اليوم",
+        "$mainUrl/schedule/" to "يعرض اليوم ${weekday}",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if ("${request.data}".contains("episodes")) {
-            val document = app.get(request.data + "page/${page}/").document
-            val home = document.select("div.page-content .row div.col-12").mapNotNull {
-                it.toSearchResult()
-            }
-            return newHomePageResponse(
-                list = HomePageList(
-                    name = request.name,
-                    list = home,
-                    isHorizontalImages = true
-                ),
-                hasNext = true
-            )
-        } else if("${request.data}".contains("schedule")) {
-            val now = LocalDate.now()
-            val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
-            val document = app.get(request.data).document
-            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
-                it.toSearchSchedule()
-            }
-            return newHomePageResponse(request.name, home, false)
-        } else {
-            val document = app.get(request.data + "page/${page}/").document
-            val home = document.select("div.page-content .row div.box-5x1").mapNotNull {
-                it.toSearchResult()
-            }
-            return newHomePageResponse(request.name, home)
-        }
-    }
-
-    override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
-        val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
-        val titleEng = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
-        val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
-        val tags = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
-        val plot = document.selectFirst("div.content p")?.text()?.trim() ?: return null
-
-        return if (url.contains("movies")) {
-            newMovieLoadResponse(titleJap ?: titleEng, url, TvType.AnimeMovie, url) {
-                this.posterUrl = posterUrl
-                this.plot = plot
-                this.tags = tags
-            }
-        } else if (url.contains("animes")) {
-            //get list seasons > episodes
-            val episodes = mutableListOf<Episode>()
-            document.select("ul.episodes-lists li").map { ele ->
-                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
-                val epsDoc = app.get(page).document
-                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
-                    episodes.add(
-                        Episode(
-                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            season = ele?.attr("data-number")?.toIntOrNull(),
-                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                        )
-                    )
-                }
-            }
-            
-            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
-                this.engName = titleEng
-                this.japName = titleJap
-                this.posterUrl = posterUrl
-                this.plot = plot
-                this.tags = tags
-                addEpisodes(
-                    DubStatus.Subbed,
-                    episodes
-                )
-            }
-        } else if (url.contains("seasons")) {
-            //list episodes
-            val episodes = mutableListOf<Episode>()
-            document.select("ul.episodes-lists li").mapNotNull { eps ->
-                    episodes.add(
-                        Episode(
-                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            // season = ele?.attr("data-number")?.toIntOrNull(),
-                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                        )
-                    )
-                }
-
-            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
-                this.engName = titleEng
-                this.japName = titleJap
-                this.posterUrl = posterUrl
-                this.plot = plot
-                this.tags = tags
-                addEpisodes(
-                    DubStatus.Subbed,
-                    episodes
-                )
-            }
-        } else if (url.contains("episodes")) {
-            //episode
-            val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
-            // val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
-            newMovieLoadResponse(episodeTitle, url, TvType.AnimeMovie, url) {
-                // this.posterUrl = posterUrl
-            }
-        } else {
-            newMovieLoadResponse("NO TITLE", url, TvType.AnimeMovie, url) {}
-        }
-    }
-
-    override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/?s=${query}").document
-        return document.select("div.page-content .row div.col-12").mapNotNull { it.toSearchResult() }
-    }
-
-    private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
-        val href = this.selectFirst("a")?.attr("href") ?: return null
-        val posterUrl = this.selectFirst("a")?.attr("data-src") ?: return null
-        return if (href.contains("movies")) {
-            newMovieSearchResponse(title, href, TvType.AnimeMovie) {
-                this.posterUrl = posterUrl
-            }
-        } else if (href.contains("episodes")) {
-            val e = this.selectFirst("a.episode")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
-            val s = this.selectFirst("a.extra")?.text()?.trim()?.replace("الموسم ", "") ?: return null
-            newAnimeSearchResponse("${title} S${s}-E${e}", href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
-        } else if (href.contains("seasons")) {
-            val s = this.selectFirst("div.info a.extra h4")?.text()?.trim()?.replace("الموسم ", "") ?: return null
-            val t = if(s.isNullOrEmpty()) title else "${title} S${s}"
-            newAnimeSearchResponse(t, href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
-        } else {
-            newAnimeSearchResponse(title, href, TvType.Anime) {
-                this.posterUrl = posterUrl
-            }
+        val document = app.get(request.data).document
+        val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
+            it.toSearchSchedule()
         }
     }
 
@@ -174,9 +36,4 @@ class AnimercoProvider : MainAPI() {
             this.posterUrl = posterUrl
         }
     }
-
-    private fun String.getIntFromText(): Int? {
-        return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
-    }
-
 }
