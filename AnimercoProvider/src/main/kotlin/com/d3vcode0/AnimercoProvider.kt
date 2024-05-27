@@ -165,4 +165,8 @@ class AnimercoProvider : MainAPI() {
             else -> "error"
         }
     }
+
+    private fun String.getIntFromText(): Int? {
+        return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
+    }
 }
