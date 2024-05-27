@@ -59,6 +59,7 @@ class AnimercoProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val document  = app.get(url).document
+
         val titleJap  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val titleEng  = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
@@ -72,7 +73,7 @@ class AnimercoProvider : MainAPI() {
 
         if (url.contains("movies")) {
             return newMovieLoadResponse(titleEng ?: titleJap, url, TvType.AnimeMovie, url) {
-                this.name                = titleJap
+                this.name                = titleEng
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
@@ -100,13 +101,13 @@ class AnimercoProvider : MainAPI() {
                 }
             }
             return newAnimeLoadResponse(titleEng ?: titleJap, url, TvType.Anime, true) {
-                this.name                = titleJap
+                this.name                = titleEng
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
                 this.rating              = rating
                 this.tags                = tags
-                this.duration            = duration.getIntFromText()
+                this.duration            = duration.getIntFromText() ?: null
                 this.backgroundPosterUrl = bgImage
                 addTrailer(trailer)
                 addEpisodes(DubStatus.Subbed, episodes)
