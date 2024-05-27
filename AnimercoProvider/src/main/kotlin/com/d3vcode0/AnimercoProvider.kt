@@ -61,7 +61,7 @@ class AnimercoProvider : MainAPI() {
         val plot = document.selectFirst("div.content p")?.text()?.trim() ?: return null
 
         return if (url.contains("movies")) {
-            newMovieLoadResponse(titleJap, url, TvType.AnimeMovie, url) {
+            newMovieLoadResponse(titleJap ?: titleEng, url, TvType.AnimeMovie, url) {
                 this.name = titleEng
                 this.posterUrl = posterUrl
                 this.plot = plot
@@ -121,14 +121,21 @@ class AnimercoProvider : MainAPI() {
                     episodes
                 )
             }
-        } else {
+        } else if (url.contains("episodes")) {
             //episode
             val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
             val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
             newMovieLoadResponse(episodeTitle, url, TvType.AnimeMovie, url) {
                 this.posterUrl = posterUrl
             }
+        } else {
+            newMovieLoadResponse("NO TITLE", url, TvType.AnimeMovie, url) {}
         }
+    }
+
+    override suspend fun search(query: String): List<SearchResponse> {
+        val document = app.get("${mainUrl}/?s=${query}").document
+        return document.select("div.page-content .row div.col-12").mapNotNull { it.toSearchResult() }
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
