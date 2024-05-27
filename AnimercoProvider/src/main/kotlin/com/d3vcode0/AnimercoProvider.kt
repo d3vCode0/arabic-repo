@@ -42,7 +42,7 @@ class AnimercoProvider : MainAPI() {
             val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
                 it.toSearchSchedule()
             }
-            return newHomePageResponse(request.name, home)
+            return newHomePageResponse(request.name, home, false)
         } else {
             val document = app.get(request.data + "page/${page}/").document
             val home = document.select("div.page-content .row div.box-5x1").mapNotNull {
