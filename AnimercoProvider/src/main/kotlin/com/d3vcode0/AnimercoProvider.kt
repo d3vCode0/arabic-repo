@@ -65,11 +65,11 @@ class AnimercoProvider : MainAPI() {
     }
 
     private fun Element.toSearchEpisode(): SearchResponse? {
-        title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
-        href = fixUrlNull(this.selectFirst("div.info a")?.attr("href")) ?: return null
-        poster = fixUrlNull(this.selectFirst("a.image")?.attr("data-src")) ?: return null
-        episode = this.selectFirst("div.info a.badge")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
-        season = this.selectFirst("div.info span.anime-type")?.text()?.trim()?.replace("الموسم ", "") ?: return null
+        val title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("div.info a")?.attr("href")) ?: return null
+        val poster = fixUrlNull(this.selectFirst("a.image")?.attr("data-src")) ?: return null
+        val episode = this.selectFirst("div.info a.badge")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
+        val season = this.selectFirst("div.info span.anime-type")?.text()?.trim()?.replace("الموسم ", "") ?: return null
 
         return newAnimeSearchResponse("${title} S${season}-E${episode}", href, TvType.Anime) {
             this.posterUrl = poster
