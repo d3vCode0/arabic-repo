@@ -56,6 +56,21 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
+    override suspend fun load(url: String): LoadResponse? {
+        val document = app.get(url).document
+        val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+
+        return if (url.contains("movies")) {
+            newMovieLoadResponse(titleJap ?: titleEng, url, TvType.AnimeMovie, url) {
+                this.posterUrl = posterUrl
+            } else {
+                newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
+                this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
+            }
+        }
+    }
+
     private fun Element.toSearchSchedule(): SearchResponse? {
         val title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
