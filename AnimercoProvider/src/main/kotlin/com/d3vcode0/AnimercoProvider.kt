@@ -1,6 +1,7 @@
 package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -66,7 +67,7 @@ class AnimercoProvider : MainAPI() {
         val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
         val trailer   = document.selectFirst("button#btn-trailer")?.attr("data-href") ?: return null
         val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
-        val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull()() ?: return null
+        val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
 
         if (url.contains("movies")) {
             return newMovieLoadResponse(titleEng ?: titleJap, url, TvType.AnimeMovie, url) {
