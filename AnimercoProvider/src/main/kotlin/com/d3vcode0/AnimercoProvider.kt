@@ -17,18 +17,34 @@ class AnimercoProvider : MainAPI() {
 
     override val mainPage = mainPageOf(
         "$mainUrl/schedule/" to "يعرض اليوم ${weekday.toDayar()}",
+        "$mainUrl/" to "الحلقات المثبتة",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
-        val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
-            it.toSearchSchedule()
+        if (request.name.contains("schedule")) {
+            val document = app.get(request.data).document
+            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
+                it.toSearchSchedule()
+            }
+            return newHomePageResponse(
+                name = request.name,
+                list = home,
+                hasNext = false
+            )
+        } else if (request.name.contains("episodes")) {
+            val document = app.get(request.data).document
+            val home = document.select("div.media-section div.row div.col-12").mapNotNull {
+                it.toSearchEpisode()
+            }
+            return newHomePageResponse(
+                list = HomePageList(
+                    name = request.name,
+                    list = home,
+                    isHorizontalImages = true
+                ),
+                hasNext = false
+            )
         }
-        return newHomePageResponse(
-            name = request.name,
-            list = home,
-            hasNext = false
-        )
     }
 
     private fun Element.toSearchSchedule(): SearchResponse? {
@@ -39,6 +55,20 @@ class AnimercoProvider : MainAPI() {
 
         return newAnimeSearchResponse("${title} S${season}", href, TvType.Anime) {
             this.posterUrl = posterUrl
+            addDubStatus()
+        }
+    }
+
+    private fun Element.toSearchEpisode(): SearchResponse? {
+        title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
+        href = fixUrlNull(this.selectFirst("div.info a")?.attr("href")) ?: return null
+        poster = fixUrlNull(this.selectFirst("a.image")?.attr("data-src")) ?: return null
+        episode = this.selectFirst("div.info a.badge")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
+        season = this.selectFirst("div.info span.anime-type")?.text()?.trim()?.replace("الموسم ", "") ?: return null
+
+        newAnimeSearchResponse("${title} S${season}-E${episode}", href, TvType.Anime) {
+            this.posterUrl = poster
+            addDubStatus(false, episode?.toIntOrNull())
         }
     }
 
