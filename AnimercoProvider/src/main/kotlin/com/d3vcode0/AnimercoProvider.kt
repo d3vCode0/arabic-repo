@@ -21,17 +21,7 @@ class AnimercoProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (request.name.contains("schedule")) {
-            val document = app.get(request.data).document
-            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
-                it.toSearchSchedule()
-            }
-            return newHomePageResponse(
-                name = request.name,
-                list = home,
-                hasNext = false
-            )
-        } else {
+        if (request.name.contains("الحلقات المثبتة")) {
             val document = app.get(request.data).document
             val home = document.select("div.media-section div.row div.col-12").mapNotNull {
                 it.toSearchEpisode()
@@ -42,6 +32,16 @@ class AnimercoProvider : MainAPI() {
                     list = home,
                     isHorizontalImages = true
                 ),
+                hasNext = false
+            )
+        } else {
+            val document = app.get(request.data).document
+            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
+                it.toSearchSchedule()
+            }
+            return newHomePageResponse(
+                name = request.name,
+                list = home,
                 hasNext = false
             )
         }
