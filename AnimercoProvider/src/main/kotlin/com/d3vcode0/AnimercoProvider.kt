@@ -85,7 +85,7 @@ class AnimercoProvider : MainAPI() {
             }
             
             newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
-                this.engName = titleEng
+                // this.engName = titleEng
                 this.japName = titleJap
                 this.posterUrl = posterUrl
                 this.plot = plot
