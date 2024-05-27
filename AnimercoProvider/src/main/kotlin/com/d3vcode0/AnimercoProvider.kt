@@ -12,8 +12,8 @@ class AnimercoProvider : MainAPI() {
     override val hasMainPage = true
     override var lang = "ar"
     override val supportedTypes = setOf(TvType.AnimeMovie, TvType.Anime)
-    override val now = LocalDate.now()
-    override val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
+    val now = LocalDate.now()
+    val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
     override val mainPage = mainPageOf(
         "$mainUrl/schedule/" to "يعرض اليوم ${weekday}",
