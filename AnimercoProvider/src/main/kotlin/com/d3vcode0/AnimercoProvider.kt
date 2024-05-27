@@ -61,12 +61,42 @@ class AnimercoProvider : MainAPI() {
         val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
 
-        return if (url.contains("movies")) {
-                newMovieLoadResponse(titleJap, url, TvType.AnimeMovie, url) {
+        return if (url.contains("movies") || url.contains("episodes")) {
+            val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
+                newMovieLoadResponse(titleJap ?: episodeTitle, url, TvType.AnimeMovie, url) {
                     this.posterUrl = posterUrl
                 }
-            } else {
-                newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
+        } else if (url.contains("animes")) {
+            //get list seasons > episodes
+            val episodes = mutableListOf<Episode>()
+            document.select("ul.episodes-lists li").map { ele ->
+                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
+                val epsDoc = app.get(page).document
+                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
+                    episodes.add(
+                        Episode(
+                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            season = ele?.attr("data-number")?.toIntOrNull(),
+                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
+                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
+                        )
+                    )
+                }
+            }
+            
+            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
+                this.engName = titleEng
+                this.japName = titleJap
+                this.posterUrl = posterUrl
+                this.plot = plot
+                this.tags = tags
+                addEpisodes(
+                    DubStatus.Subbed,
+                    episodes
+                )
+            }
+        } else {
+            newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
                 this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
             }
         }
