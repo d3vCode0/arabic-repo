@@ -44,6 +44,12 @@ class AnimercoProvider : MainAPI() {
                 ),
                 hasNext = false
             )
+        } else {
+            val document = app.get(request.data).document
+            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
+                it.toSearchSchedule()
+            }
+            return newHomePageResponse(request.name, home)
         }
     }
 
@@ -55,7 +61,6 @@ class AnimercoProvider : MainAPI() {
 
         return newAnimeSearchResponse("${title} S${season}", href, TvType.Anime) {
             this.posterUrl = posterUrl
-            addDubStatus()
         }
     }
 
@@ -66,9 +71,12 @@ class AnimercoProvider : MainAPI() {
         episode = this.selectFirst("div.info a.badge")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
         season = this.selectFirst("div.info span.anime-type")?.text()?.trim()?.replace("الموسم ", "") ?: return null
 
-        newAnimeSearchResponse("${title} S${season}-E${episode}", href, TvType.Anime) {
+        return newAnimeSearchResponse("${title} S${season}-E${episode}", href, TvType.Anime) {
             this.posterUrl = poster
-            addDubStatus(false, episode?.toIntOrNull())
+            addDubStatus(
+                isDub = false,
+                episodes = episode?.toIntOrNull()
+            )
         }
     }
 
