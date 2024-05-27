@@ -80,6 +80,33 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
+    private fun Element.toSearchResult(): SearchResponse? {
+        val title = this.selectFirst("div.info h3")?.text()?.trim() ?: return null
+        val href = this.selectFirst("a")?.attr("href") ?: return null
+        val posterUrl = this.selectFirst("a")?.attr("data-src") ?: return null
+        return if (href.contains("movies")) {
+            newMovieSearchResponse(title, href, TvType.AnimeMovie) {
+                this.posterUrl = posterUrl
+            }
+        } else if (href.contains("episodes")) {
+            val e = this.selectFirst("a.episode")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
+            val s = this.selectFirst("a.extra")?.text()?.trim()?.replace("الموسم ", "") ?: return null
+            newAnimeSearchResponse("${title} S${s}-E${e}", href, TvType.Anime) {
+                this.posterUrl = posterUrl
+            }
+        } else if (href.contains("seasons")) {
+            val s = this.selectFirst("div.info a.extra h4")?.text()?.trim()?.replace("الموسم ", "") ?: return null
+            val t = if(s.isNullOrEmpty()) title else "${title} S${s}"
+            newAnimeSearchResponse(t, href, TvType.Anime) {
+                this.posterUrl = posterUrl
+            }
+        } else {
+            newAnimeSearchResponse(title, href, TvType.Anime) {
+                this.posterUrl = posterUrl
+            }
+        }
+    }
+
     fun String.toDayar(): String {
         return when(this) {
             "monday" -> "الإثنين"
