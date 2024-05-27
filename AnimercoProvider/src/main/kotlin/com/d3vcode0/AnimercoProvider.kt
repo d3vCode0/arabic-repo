@@ -62,7 +62,6 @@ class AnimercoProvider : MainAPI() {
 
         return if (url.contains("movies")) {
             newMovieLoadResponse(titleJap ?: titleEng, url, TvType.AnimeMovie, url) {
-                this.name = titleEng
                 this.posterUrl = posterUrl
                 this.plot = plot
                 this.tags = tags
@@ -124,9 +123,9 @@ class AnimercoProvider : MainAPI() {
         } else if (url.contains("episodes")) {
             //episode
             val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
-            val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
+            // val posterUrl = document.selectFirst("a#click-player")?.attr("data-src") ?: return null
             newMovieLoadResponse(episodeTitle, url, TvType.AnimeMovie, url) {
-                this.posterUrl = posterUrl
+                // this.posterUrl = posterUrl
             }
         } else {
             newMovieLoadResponse("NO TITLE", url, TvType.AnimeMovie, url) {}
