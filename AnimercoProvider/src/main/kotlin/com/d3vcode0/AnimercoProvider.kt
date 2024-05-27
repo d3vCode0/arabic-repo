@@ -31,7 +31,7 @@ class AnimercoProvider : MainAPI() {
                 list = home,
                 hasNext = false
             )
-        } else if (request.name.contains("episodes")) {
+        } else {
             val document = app.get(request.data).document
             val home = document.select("div.media-section div.row div.col-12").mapNotNull {
                 it.toSearchEpisode()
@@ -44,12 +44,6 @@ class AnimercoProvider : MainAPI() {
                 ),
                 hasNext = false
             )
-        } else {
-            val document = app.get(request.data).document
-            val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
-                it.toSearchSchedule()
-            }
-            return newHomePageResponse(request.name, home)
         }
     }
 
