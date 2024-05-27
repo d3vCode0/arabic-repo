@@ -99,18 +99,18 @@ class AnimercoProvider : MainAPI() {
                     )
                 }
             }
-        }
-        return newAnimeLoadResponse(titleEng ?: titleJap, url, TvType.Anime, true) {
-            this.name                = titleJap
-            this.posterUrl           = posterUrl
-            this.year                = year
-            this.plot                = plot
-            this.rating              = rating
-            this.tags                = tags
-            this.duration            = duration.getIntFromText()
-            this.backgroundPosterUrl = bgImage
-            addTrailer(trailer)
-            addEpisodes(DubStatus.Subbed, episodes)
+            return newAnimeLoadResponse(titleEng ?: titleJap, url, TvType.Anime, true) {
+                this.name                = titleJap
+                this.posterUrl           = posterUrl
+                this.year                = year
+                this.plot                = plot
+                this.rating              = rating
+                this.tags                = tags
+                this.duration            = duration.getIntFromText()
+                this.backgroundPosterUrl = bgImage
+                addTrailer(trailer)
+                addEpisodes(DubStatus.Subbed, episodes)
+            }
         }
         // else if (url.contains("seasons")) {}
         // else if (url.contains("episodes")) {}
