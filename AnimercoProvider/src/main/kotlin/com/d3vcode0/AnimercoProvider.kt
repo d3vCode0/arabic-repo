@@ -18,6 +18,9 @@ class AnimercoProvider : MainAPI() {
     override val mainPage = mainPageOf(
         "$mainUrl/schedule/" to "يعرض اليوم ${weekday.toDayar()}",
         "$mainUrl/" to "الحلقات المثبتة",
+        "$mainUrl/animes/" to "قائمة الأنمي",
+        "$mainUrl/movies/" to "قائمة الأفلام",
+        "$mainUrl/seasons/" to "قائمة المواسم"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -34,7 +37,7 @@ class AnimercoProvider : MainAPI() {
                 ),
                 hasNext = false
             )
-        } else {
+        } else if (request.name.contains("يعرض")) {
             val document = app.get(request.data).document
             val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
                 it.toSearchSchedule()
@@ -44,6 +47,12 @@ class AnimercoProvider : MainAPI() {
                 list = home,
                 hasNext = false
             )
+        } else {
+            val document = app.get(request.data + "page/${page}/").document
+            val home = document.select("div.page-content .row div.box-5x1").mapNotNull {
+                it.toSearchResult()
+            }
+            return newHomePageResponse(request.name, home)
         }
     }
 
@@ -65,12 +74,9 @@ class AnimercoProvider : MainAPI() {
         val episode = this.selectFirst("div.info a.badge")?.text()?.trim()?.replace("الحلقة ", "") ?: return null
         val season = this.selectFirst("div.info span.anime-type")?.text()?.trim()?.replace("الموسم ", "") ?: return null
 
-        return newAnimeSearchResponse("${title} S${season}-E${episode}", href, TvType.Anime) {
+        return newAnimeSearchResponse("${title} S${season}", href, TvType.Anime) {
             this.posterUrl = poster
-            addDubStatus(
-                isDub = false,
-                episodes = episode?.toIntOrNull()
-            )
+            addSub(episodes = episode?.toIntOrNull())
         }
     }
 
