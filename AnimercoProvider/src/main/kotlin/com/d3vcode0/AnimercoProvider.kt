@@ -62,8 +62,9 @@ class AnimercoProvider : MainAPI() {
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
 
         return if (url.contains("movies")) {
-            newMovieLoadResponse(titleJap ?: titleEng, url, TvType.AnimeMovie, url) {
-                this.posterUrl = posterUrl
+                newMovieLoadResponse(titleJap, url, TvType.AnimeMovie, url) {
+                    this.posterUrl = posterUrl
+                }
             } else {
                 newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
                 this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
