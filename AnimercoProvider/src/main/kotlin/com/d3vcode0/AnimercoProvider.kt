@@ -118,7 +118,7 @@ class AnimercoProvider : MainAPI() {
                 this.duration            = duration.getIntFromText() ?: null
                 this.backgroundPosterUrl = bgImage
                 addTrailer(trailer)
-                addEpisodes(DubStatus.Subbed, episodes)
+                addEpisodes(DubStatus.Subbed, episodes ?: null)
             }
         }
         // else if (url.contains("seasons")) {}
