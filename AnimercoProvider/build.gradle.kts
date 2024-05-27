@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 
 
@@ -22,5 +22,5 @@ cloudstream {
         "Anime",
     )
 
-    iconUrl = "https://cimalek.art/wp-content/uploads/2022/11/cropped-fav-2-192x192.png"
+    iconUrl = "https://ww3.animerco.org/wp-content/uploads/2024/03/cropped-android-chrome-512x512-1-192x192.png"
 }

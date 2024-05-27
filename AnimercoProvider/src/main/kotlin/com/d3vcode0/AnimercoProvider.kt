@@ -25,8 +25,12 @@ class AnimercoProvider : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val headers = mapOf(
+            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
+            "referer" to "$mainUrl/"
+        )
         if (request.name.contains("الحلقات المثبتة")) {
-            val document = app.get(request.data).document
+            val document = app.get(request.data, headers = headers, timeout = 40).document
             val home = document.select("div.media-section div.row div.col-12").mapNotNull {
                 it.toSearchEpisode()
             }
@@ -39,7 +43,7 @@ class AnimercoProvider : MainAPI() {
                 hasNext = false
             )
         } else if (request.name.contains("يعرض")) {
-            val document = app.get(request.data).document
+            val document = app.get(request.data, headers = headers, timeout = 40).document
             val home = document.select("div.tabs-wraper div#$weekday div.box-5x1").mapNotNull {
                 it.toSearchSchedule()
             }
@@ -49,7 +53,7 @@ class AnimercoProvider : MainAPI() {
                 hasNext = false
             )
         } else {
-            val document = app.get(request.data + "page/${page}/").document
+            val document = app.get(request.data + "page/${page}/", headers = headers, timeout = 40).document
             val home = document.select("div.page-content .row div.box-5x1").mapNotNull {
                 it.toSearchResult()
             }
@@ -58,7 +62,11 @@ class AnimercoProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document  = app.get(url).document
+        val headers = mapOf(
+            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
+            "referer" to "$mainUrl/movies/"
+        )
+        val document  = app.get(url, headers = headers, timeout = 40).document
 
         val titleJap  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
         val titleEng  = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
@@ -88,7 +96,7 @@ class AnimercoProvider : MainAPI() {
             val episodes = mutableListOf<Episode>()
             document.select("ul.episodes-lists li").map { ele ->
                 val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
-                val epsDoc = app.get(page).document
+                val epsDoc = app.get(page, headers = headers, timeout = 40).document
                 epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
                     episodes.add(
                         Episode(
