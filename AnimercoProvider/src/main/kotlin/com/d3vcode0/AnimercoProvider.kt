@@ -25,7 +25,7 @@ class AnimercoProvider : MainAPI() {
             it.toSearchSchedule()
         }
         return newHomePageResponse(
-            items = request.name,
+            name = request.name,
             list = home,
             hasNext = false
         )
