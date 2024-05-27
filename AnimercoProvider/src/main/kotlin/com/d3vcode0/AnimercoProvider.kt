@@ -57,47 +57,35 @@ class AnimercoProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
-        val titleJap = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val document  = app.get(url).document
+        val titleJap  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val titleEng  = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+        val bgImage   = document.selectFirst("div.banner")?.attr("data-src") ?: return null
+        val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
+        val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
+        val trailer   = document.selectFirst("button#btn-trailer")?.attr("data-href") ?: return null
+        val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
+        val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull()() ?: return null
 
-        return if (url.contains("movies") || url.contains("episodes")) {
-            val episodeTitle = document.selectFirst("div.page-head div.container h1")?.text()?.trim() ?: return null
-                newMovieLoadResponse(titleJap ?: episodeTitle, url, TvType.AnimeMovie, url) {
-                    this.posterUrl = posterUrl
-                }
-        } else if (url.contains("animes")) {
-            //get list seasons > episodes
-            val episodes = mutableListOf<Episode>()
-            document.select("ul.episodes-lists li").map { ele ->
-                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
-                val epsDoc = app.get(page).document
-                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
-                    episodes.add(
-                        Episode(
-                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            season = ele?.attr("data-number")?.toIntOrNull(),
-                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                        )
-                    )
-                }
+        if (url.contains("movies")) {
+            return newMovieLoadResponse(titleEng ?: titleJap, url, TvType.AnimeMovie, url) {
+                this.posterUrl           = posterUrl
+                this.year                = year
+                this.plot                = plot
+                this.rating              = rating
+                this.tags                = tags
+                this.backgroundPosterUrl = bgImage
+                addTrailer(trailer)
             }
-            
-            newAnimeLoadResponse(titleJap, url, TvType.Anime, true) {
-                // this.engName = titleEng
-                this.japName = titleJap
-                this.posterUrl = posterUrl
-                this.plot = plot
-                this.tags = tags
-                addEpisodes(
-                    DubStatus.Subbed,
-                    episodes
-                )
-            }
-        } else {
-            newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
+        }
+        // else if (url.contains("animes")) {}
+        // else if (url.contains("seasons")) {}
+        // else if (url.contains("episodes")) {}
+        else {
+            return newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
                 this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
+                this.plot      = "NO DATA"
             }
         }
     }
