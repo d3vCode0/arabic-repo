@@ -66,10 +66,25 @@ class AnimercoProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val document  = avoidCloudflare(url).document
-        val title  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        val bgImage   = document.selectFirst("div.banner")?.attr("data-src") ?: return null
         val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: document.selectFirst("div.head-box div.banner")?.attr("data-src")
+        val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
+        val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
+        val trailer   = document.selectFirst("button#btn-trailer")?.attr("data-href") ?: return null
+        val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
+        val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
+        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text() ?: return null
+        
         return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
-            this.posterUrl = posterUrl
+            this.posterUrl           = posterUrl
+            this.year                = year
+            this.plot                = plot
+            this.rating              = rating
+            this.tags                = tags
+            this.duration            = duration.getIntFromText()
+            this.backgroundPosterUrl = bgImage
+            addTrailer(trailer)
         }
     }
 
