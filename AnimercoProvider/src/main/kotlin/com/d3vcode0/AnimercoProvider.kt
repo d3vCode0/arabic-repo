@@ -66,15 +66,16 @@ class AnimercoProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val document  = avoidCloudflare(url).document
-        val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
-        val bgImage   = document.selectFirst("div.banner")?.attr("data-src") ?: return null
-        val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: document.selectFirst("div.head-box div.banner")?.attr("data-src")
+
+        val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim()
+        val bgImage   = fixUrlNull(document.selectFirst("div.banner")?.attr("data-src")) ?: return null
+        val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div.head-box div.banner")?.attr("data-src"))
         val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
         val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
-        val trailer   = document.selectFirst("button#btn-trailer")?.attr("data-href") ?: return null
+        val trailer   = fixUrlNull(document.selectFirst("button#btn-trailer")?.attr("data-href")) ?: return null
         val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
         val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
-        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text() ?: return null
+        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text().getIntFromText() ?: return null
         
         if (url.contains("movies")) {
             return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
@@ -83,7 +84,7 @@ class AnimercoProvider : MainAPI() {
                 this.plot                = plot
                 this.rating              = rating
                 this.tags                = tags
-                this.duration            = duration.getIntFromText()
+                this.duration            = duration
                 this.backgroundPosterUrl = bgImage
                 addTrailer(trailer)
             }
@@ -97,10 +98,11 @@ class AnimercoProvider : MainAPI() {
                 epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
                     episodes.add(
                         Episode(
-                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            season = ele?.attr("data-number")?.toIntOrNull(),
-                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
+                            data      = eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            name      = eps.selectFirst("a.title h3")?.text()?.trim() ?: return@mapNotNull null,
+                            season    = ele?.attr("data-number")?.toIntOrNull() ?: return@mapNotNull null,
+                            episode   = eps.selectFirst("a.title h3")?.text()?.getIntFromText() ?: return@mapNotNull null,
+                            posterUrl = fixUrlNull(eps.selectFirst("a.image")?.attr("data-src")) ?: return@mapNotNull null,
                         )
                     )
                 }
@@ -112,10 +114,10 @@ class AnimercoProvider : MainAPI() {
                 this.plot                = plot
                 this.rating              = rating
                 this.tags                = tags
-                this.duration            = duration.getIntFromText()
+                this.duration            = duration
                 this.backgroundPosterUrl = bgImage
                 addTrailer(trailer)
-                addEpisodes(DubStatus.Subbed, episodes ?: null)
+                addEpisodes(DubStatus.Subbed, episodes)
             }
         }
         else {
