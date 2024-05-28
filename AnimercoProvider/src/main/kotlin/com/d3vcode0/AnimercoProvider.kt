@@ -67,67 +67,10 @@ class AnimercoProvider : MainAPI() {
             "referer" to "$mainUrl/movies/"
         )
         val document  = app.get(url, headers = headers, timeout = 40).document
-
-        val titleJap  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
-        val titleEng  = document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
+        val title  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim()
         val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
-        val bgImage   = document.selectFirst("div.banner")?.attr("data-src") ?: return null
-        val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
-        val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
-        val trailer   = document.selectFirst("button#btn-trailer")?.attr("data-href") ?: return null
-        val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
-        val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
-        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text() ?: return null
-
-        if (url.contains("movies")) {
-            return newMovieLoadResponse(titleEng ?: titleJap, url, TvType.AnimeMovie, url) {
-                this.name                = titleEng
-                this.posterUrl           = posterUrl
-                this.year                = year
-                this.plot                = plot
-                this.rating              = rating
-                this.tags                = tags
-                this.duration            = duration.getIntFromText()
-                this.backgroundPosterUrl = bgImage
-                addTrailer(trailer)
-            }
-        }
-        else if (url.contains("animes")) {
-            val episodes = mutableListOf<Episode>()
-            document.select("ul.episodes-lists li").map { ele ->
-                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
-                val epsDoc = app.get(page, headers = headers, timeout = 40).document
-                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
-                    episodes.add(
-                        Episode(
-                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                            season = ele?.attr("data-number")?.toIntOrNull(),
-                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
-                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
-                        )
-                    )
-                }
-            }
-            return newAnimeLoadResponse(titleEng ?: titleJap, url, TvType.Anime, true) {
-                this.name                = titleEng
-                this.posterUrl           = posterUrl
-                this.year                = year
-                this.plot                = plot
-                this.rating              = rating
-                this.tags                = tags
-                this.duration            = duration.getIntFromText() ?: null
-                this.backgroundPosterUrl = bgImage
-                addTrailer(trailer)
-                addEpisodes(DubStatus.Subbed, episodes ?: null)
-            }
-        }
-        // else if (url.contains("seasons")) {}
-        // else if (url.contains("episodes")) {}
-        else {
-            return newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
-                this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
-                this.plot      = "NO DATA"
-            }
+        return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
+            this.posterUrl = posterUrl
         }
     }
 
