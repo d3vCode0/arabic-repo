@@ -68,7 +68,7 @@ class AnimercoProvider : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document  = avoidCloudflare(url).document
 
-        val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim()
+        val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
         val bgImage   = fixUrlNull(document.selectFirst("div.banner")?.attr("data-src")) ?: return null
         val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div.head-box div.banner")?.attr("data-src"))
         val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
@@ -79,7 +79,7 @@ class AnimercoProvider : MainAPI() {
         val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText() ?: return null
         
         if (url.contains("movies")) {
-            return newMovieLoadResponse(?title ?: null, url, TvType.AnimeMovie, url){
+            return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
@@ -109,7 +109,7 @@ class AnimercoProvider : MainAPI() {
                 }
             }
 
-            return newAnimeLoadResponse(?title ?: null, url, TvType.Anime, comingSoonIfNone = true) {
+            return newAnimeLoadResponse(title, url, TvType.Anime, comingSoonIfNone = true) {
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
