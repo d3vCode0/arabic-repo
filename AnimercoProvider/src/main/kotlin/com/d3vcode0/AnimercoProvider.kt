@@ -67,10 +67,10 @@ class AnimercoProvider : MainAPI() {
             "referer" to "$mainUrl/movies/"
         )
         val document  = app.get(url, headers = headers, timeout = 40).document
-        val title  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim()
-        val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
-        return newMovieLoadResponse(title ?: "NO title", url, TvType.AnimeMovie, url){
-            this.posterUrl = posterUrl
+        val title  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
+        // val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+        return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
+            // this.posterUrl = posterUrl
         }
     }
 
