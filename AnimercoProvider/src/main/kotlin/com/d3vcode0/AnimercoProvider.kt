@@ -76,15 +76,53 @@ class AnimercoProvider : MainAPI() {
         val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
         val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text() ?: return null
         
-        return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
-            this.posterUrl           = posterUrl
-            this.year                = year
-            this.plot                = plot
-            this.rating              = rating
-            this.tags                = tags
-            this.duration            = duration.getIntFromText()
-            this.backgroundPosterUrl = bgImage
-            addTrailer(trailer)
+        if (url.contains("movies")) {
+            return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
+                this.posterUrl           = posterUrl
+                this.year                = year
+                this.plot                = plot
+                this.rating              = rating
+                this.tags                = tags
+                this.duration            = duration.getIntFromText()
+                this.backgroundPosterUrl = bgImage
+                addTrailer(trailer)
+            }
+        }
+        else if (url.contains("animes")) {
+            val episodes = mutableListOf<Episode>()
+            document.select("ul.episodes-lists li").map { ele ->
+                val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
+                val epsDoc = avoidCloudflare(page).document
+                // val status = epsDoc.selectFirst("div.status a")?.text()?.trim()
+                epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
+                    episodes.add(
+                        Episode(
+                            eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+                            season = ele?.attr("data-number")?.toIntOrNull(),
+                            episode = eps.selectFirst("a.title h3")?.text()?.getIntFromText(),
+                            posterUrl = eps.selectFirst("a.image")?.attr("data-src") ?: return@mapNotNull null,
+                        )
+                    )
+                }
+            }
+
+            return newAnimeLoadResponse(title, url, TvType.Anime, comingSoonIfNone = true) {
+                this.posterUrl           = posterUrl
+                this.year                = year
+                this.plot                = plot
+                this.rating              = rating
+                this.tags                = tags
+                this.duration            = duration.getIntFromText()
+                this.backgroundPosterUrl = bgImage
+                addTrailer(trailer)
+                addEpisodes(DubStatus.Subbed, episodes ?: null)
+            }
+        }
+        else {
+            return newMovieLoadResponse("NO FIND", url, TvType.AnimeMovie, url) {
+                this.posterUrl = "https://img.freepik.com/premium-vector/search-result-find-illustration_585024-17.jpg"
+                this.plot      = "NO DATA"
+            }
         }
     }
 
