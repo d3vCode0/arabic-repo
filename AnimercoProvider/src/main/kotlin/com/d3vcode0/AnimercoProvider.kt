@@ -2,6 +2,8 @@ package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.network.CloudflareKiller
+import com.lagradost.nicehttp.NiceResponse
 import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -13,6 +15,7 @@ class AnimercoProvider : MainAPI() {
     override val hasMainPage = true
     override var lang = "ar"
     override val supportedTypes = setOf(TvType.AnimeMovie, TvType.Anime)
+    private val interceptor = CloudflareKiller()
     val now = LocalDate.now()
     val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
@@ -62,15 +65,11 @@ class AnimercoProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val headers = mapOf(
-            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
-            "referer" to "$mainUrl/movies/"
-        )
-        val document  = app.get(url, headers = headers, timeout = 40).document
+        val document  = avoidCloudflare(url).document
         val title  = document.selectFirst("div.media-title h1")?.text()?.trim() ?: return null
-        // val posterUrl = document.selectFirst("div.anime-card .image")?.attr("data-src") ?: return null
+        val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: document.selectFirst("div.head-box div.banner")?.attr("data-src")
         return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
-            // this.posterUrl = posterUrl
+            this.posterUrl = posterUrl
         }
     }
 
@@ -140,5 +139,13 @@ class AnimercoProvider : MainAPI() {
 
     private fun String.getIntFromText(): Int? {
         return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
+    }
+
+    suspend fun avoidCloudflare(url: String): NiceResponse {
+        if (!app.get(url).isSuccessful) {
+            return app.get(url, interceptor = interceptor)
+        } else {
+            return app.get(url)
+        }
     }
 }
