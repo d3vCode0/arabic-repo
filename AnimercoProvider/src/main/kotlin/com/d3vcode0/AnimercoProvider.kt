@@ -1,5 +1,6 @@
 package com.d3vcode0
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.network.CloudflareKiller
@@ -75,7 +76,7 @@ class AnimercoProvider : MainAPI() {
         val trailer   = fixUrlNull(document.selectFirst("button#btn-trailer")?.attr("data-href")) ?: return null
         val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
         val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
-        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text().getIntFromText() ?: return null
+        val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText() ?: return null
         
         if (url.contains("movies")) {
             return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
