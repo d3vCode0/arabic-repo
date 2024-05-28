@@ -90,7 +90,7 @@ class AnimercoProvider : MainAPI() {
                         name      = eps.selectFirst("a.title h3")?.text()?.trim() ?: return@mapNotNull null,
                         season    = ele?.attr("data-number")?.toIntOrNull() ?: return@mapNotNull null,
                         episode   = eps.selectFirst("a.title h3")?.text()?.getIntFromText() ?: return@mapNotNull null,
-                        posterUrl = fixUrlNull(eps.selectFirst("a.image")?.attr("data-src")) ?: return@mapNotNull null,
+                        // posterUrl = fixUrlNull(eps.selectFirst("a.image")?.attr("data-src")) ?: return@mapNotNull null,
                     )
                 )
             }
