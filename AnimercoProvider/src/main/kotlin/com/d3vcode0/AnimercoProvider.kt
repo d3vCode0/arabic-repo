@@ -102,7 +102,7 @@ class AnimercoProvider : MainAPI() {
             this.rating              = rating
             this.tags                = tags
             this.duration            = duration
-            this.backgroundPosterUrl = bgImage
+            // this.backgroundPosterUrl = bgImage
             addTrailer(trailer) ?: null
             addEpisodes(DubStatus.Subbed, episodes)
         }
