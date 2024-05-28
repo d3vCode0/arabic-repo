@@ -70,8 +70,8 @@ class AnimercoProvider : MainAPI() {
 
         val title     = document.selectFirst("div.media-title h1")?.text()?.trim() ?: document.selectFirst("div.media-title h3")?.text()?.trim() ?: return null
         val bgImage   = fixUrlNull(document.selectFirst("div.banner")?.attr("data-src")) ?: return null
-        val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div.head-box div.banner")?.attr("data-src"))
-        val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() }
+        val posterUrl = fixUrlNull(document.selectFirst("div.anime-card div.image")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div.head-box div.banner")?.attr("data-src")) ?: return null
+        val tags      = document.select("div.genres a").mapNotNull{ it?.text()?.trim() } ?: return null
         val plot      = document.selectFirst("div.content p")?.text()?.trim() ?: return null
         val trailer   = fixUrlNull(document.selectFirst("button#btn-trailer")?.attr("data-href")) ?: return null
         val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
@@ -113,12 +113,12 @@ class AnimercoProvider : MainAPI() {
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
-                // this.rating              = rating
+                this.rating              = rating
                 this.tags                = tags
-                // this.duration            = duration
+                this.duration            = duration
                 this.backgroundPosterUrl = bgImage
-                addTrailer(trailer)
-                addEpisodes(DubStatus.Subbed, episodes)
+                addTrailer(trailer) ?: return null
+                addEpisodes(DubStatus.Subbed, episodes) ?: return null
             }
         }
         else {
