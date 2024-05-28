@@ -79,7 +79,7 @@ class AnimercoProvider : MainAPI() {
         val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText() ?: return null
         
         if (url.contains("movies")) {
-            return newMovieLoadResponse(title, url, TvType.AnimeMovie, url){
+            return newMovieLoadResponse(title ?: null, url, TvType.AnimeMovie, url){
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
@@ -109,7 +109,7 @@ class AnimercoProvider : MainAPI() {
                 }
             }
 
-            return newAnimeLoadResponse(title, url, TvType.Anime, comingSoonIfNone = true) {
+            return newAnimeLoadResponse(title ?: null, url, TvType.Anime, comingSoonIfNone = true) {
                 this.posterUrl           = posterUrl
                 this.year                = year
                 this.plot                = plot
