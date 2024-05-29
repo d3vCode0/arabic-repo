@@ -65,7 +65,7 @@ class AnimercoProvider : MainAPI() {
         }
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+       override suspend fun load(url: String): LoadResponse? {
         val document  = avoidCloudflare(url).document
 
         val title     = document.selectFirst("div.head-box div.media-title h3")?.text()?.trim() ?: document.selectFirst("div.head-box div.media-title h1")?.text()?.trim() ?: return null
@@ -77,24 +77,24 @@ class AnimercoProvider : MainAPI() {
         val rating    = document.selectFirst("span.score")?.text()?.toRatingInt() ?: return null
         val year      = document.selectFirst("ul.media-info li:contains(بداية العرض:) a")?.text()?.toIntOrNull() ?: return null
         val duration  = document.selectFirst("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText() ?: return null
-        
-        val episodes = mutableListOf<Episode>()
-        document.select("ul.episodes-lists li").map { ele ->
-            val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
-            val epsDoc = avoidCloudflare(page).document
+
+        //val episodes = mutableListOf<Episode>()
+      //  document.select("ul.episodes-lists li").map { ele ->
+         //   val page = ele.selectFirst("a.title")?.attr("href") ?: return@map
+           // val epsDoc = avoidCloudflare(page).document
             // val status = epsDoc.selectFirst("div.status a")?.text()?.trim()
-            epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
-                episodes.add(
-                    Episode(
-                        data      = eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
-                        name      = eps.selectFirst("a.title h3")?.text()?.trim() ?: return@mapNotNull null,
-                        season    = ele?.attr("data-number")?.toIntOrNull() ?: return@mapNotNull null,
-                        episode   = eps.selectFirst("a.title h3")?.text()?.getIntFromText() ?: return@mapNotNull null,
-                        // posterUrl = fixUrlNull(eps.selectFirst("a.image")?.attr("data-src")) ?: return@mapNotNull null,
-                    )
-                )
-            }
-        }
+           // epsDoc.select("ul.episodes-lists li").mapNotNull { eps ->
+            //    episodes.add(
+             //       Episode(
+              //          data      = eps.selectFirst("a.title")?.attr("href") ?: return@mapNotNull null,
+             //           name      = eps.selectFirst("a.title h3")?.text()?.trim() ?: return@mapNotNull null,
+            //            season    = ele?.attr("data-number")?.toIntOrNull() ?: return@mapNotNull null,
+           //             episode   = eps.selectFirst("a.title h3")?.text()?.getIntFromText() ?: return@mapNotNull null,
+           //             // posterUrl = fixUrlNull(eps.selectFirst("a.image")?.attr("data-src")) ?: return@mapNotNull null,
+          //          )
+         //       )
+         //   }
+        //}
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             // this.posterUrl           = posterUrl
             this.year                = year
@@ -103,8 +103,8 @@ class AnimercoProvider : MainAPI() {
             this.tags                = tags
             this.duration            = duration
             // this.backgroundPosterUrl = bgImage
-            addTrailer(trailer) ?: null
-            addEpisodes(DubStatus.Subbed, episodes)
+            (trailer) ?: null
+            //addEpisodes(DubStatus.Subbed, episodes)
         }
     }
 
