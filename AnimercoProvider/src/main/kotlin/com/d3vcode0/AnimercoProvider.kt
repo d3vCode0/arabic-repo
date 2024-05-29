@@ -97,13 +97,13 @@ class AnimercoProvider : MainAPI() {
         //}
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             // this.posterUrl           = posterUrl
-            this.year                = year
+            //this.year                = year
             this.plot                = plot
             //this.rating              = rating
             this.tags                = tags
             this.duration            = duration
             // this.backgroundPosterUrl = bgImage
-            (trailer) ?: null
+            //(trailer) ?: null
             //addEpisodes(DubStatus.Subbed, episodes)
         }
     }
