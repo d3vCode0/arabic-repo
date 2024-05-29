@@ -1,0 +1,8 @@
+{
+  "name": "Arabic",
+  "description": "Arabic Movies, Series, Animes, ...",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/d3vCode0/arabic-repo/builds/plugins.json"
+  ]
+}
